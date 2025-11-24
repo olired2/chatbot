@@ -1,0 +1,221 @@
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../../auth/[...nextauth]/route';
+import { ClassModel } from '@/models/Class';
+import connectDB from '@/lib/db/mongodb';
+import { processPDFDocument } from '@/lib/ai/embeddings';
+import { writeFile, mkdir, unlink } from 'fs/promises';
+import path from 'path';
+
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ classId: string }> }
+) {
+  try {
+    const { classId } = await params;
+    const session = await getServerSession(authOptions);
+    
+    if (!session || session.user.role !== 'Maestro') {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    await connectDB();
+    
+    // Verificar que la clase existe y pertenece al maestro
+    const classDoc = await ClassModel.findById(classId);
+    if (!classDoc) {
+      return NextResponse.json({ error: 'Clase no encontrada' }, { status: 404 });
+    }
+    
+    if (classDoc.teacher.toString() !== session.user.id) {
+      return NextResponse.json({ error: 'No tienes permiso para modificar esta clase' }, { status: 403 });
+    }
+
+    const formData = await req.formData();
+    const file = formData.get('file') as File;
+    
+    if (!file) {
+      return NextResponse.json({ error: 'No se ha subido ningún archivo' }, { status: 400 });
+    }
+
+    // Validar que sea un PDF
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      return NextResponse.json({ error: 'Solo se permiten archivos PDF' }, { status: 400 });
+    }
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    
+    // Crear directorio si no existe
+    const uploadDir = path.join(process.cwd(), 'uploads', classId);
+    await mkdir(uploadDir, { recursive: true });
+    
+    // Guardar archivo
+    const fileName = `${Date.now()}_${file.name}`;
+    const filePath = path.join(uploadDir, fileName);
+    await writeFile(filePath, buffer);
+    
+    console.log(`Archivo guardado en: ${filePath}`);
+
+    // Procesar PDF y crear embeddings
+    try {
+      await processPDFDocument(filePath, classId);
+      console.log('Embeddings creados exitosamente');
+    } catch (embeddingError) {
+      console.error('Error al crear embeddings:', embeddingError);
+      // Continuar aunque falle el embedding, se puede procesar después
+    }
+
+    // Actualizar documento de la clase
+    const updatedClass = await ClassModel.findByIdAndUpdate(
+      classId,
+      {
+        $push: {
+          documents: {
+            name: file.name,
+            path: filePath,
+            size: file.size,
+            uploadedAt: new Date(),
+            embeddings: true,
+            processedAt: new Date()
+          }
+        }
+      },
+      { new: true }
+    );
+
+    return NextResponse.json({
+      success: true,
+      message: 'Documento subido exitosamente',
+      document: {
+        name: file.name,
+        size: file.size,
+        uploadedAt: new Date()
+      }
+    });
+  } catch (error) {
+    console.error('Error uploading document:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+    return NextResponse.json({ 
+      error: 'Error al subir el documento',
+      details: errorMessage 
+    }, { status: 500 });
+  }
+}
+
+// GET para obtener los documentos de una clase
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ classId: string }> }
+) {
+  try {
+    const { classId } = await params;
+    const session = await getServerSession(authOptions);
+    
+    if (!session) {
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
+    }
+
+    await connectDB();
+    
+    const classDoc = await ClassModel.findById(classId);
+    if (!classDoc) {
+      return NextResponse.json({ error: 'Clase no encontrada' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      documents: classDoc.documents || []
+    });
+  } catch (error) {
+    console.error('Error fetching documents:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+    return NextResponse.json({ 
+      error: 'Error al obtener documentos',
+      details: errorMessage 
+    }, { status: 500 });
+  }
+}
+
+// DELETE para eliminar un documento
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ classId: string }> }
+) {
+  try {
+    const { classId } = await params;
+    const session = await getServerSession(authOptions);
+    
+    if (!session || session.user.role !== 'Maestro') {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    await connectDB();
+    
+    const { documentName } = await req.json();
+    
+    if (!documentName) {
+      return NextResponse.json({ error: 'Nombre de documento requerido' }, { status: 400 });
+    }
+
+    // Verificar que la clase existe y pertenece al maestro
+    const classDoc = await ClassModel.findById(classId);
+    if (!classDoc) {
+      return NextResponse.json({ error: 'Clase no encontrada' }, { status: 404 });
+    }
+    
+    if (classDoc.teacher.toString() !== session.user.id) {
+      return NextResponse.json({ error: 'No tienes permiso para modificar esta clase' }, { status: 403 });
+    }
+
+    // Encontrar el documento
+    const docToDelete = classDoc.documents?.find((doc: any) => doc.name === documentName);
+    
+    if (!docToDelete) {
+      return NextResponse.json({ error: 'Documento no encontrado' }, { status: 404 });
+    }
+
+    // Eliminar archivo físico si existe
+    try {
+      if (docToDelete.path) {
+        await unlink(docToDelete.path);
+        console.log(`✅ Archivo eliminado: ${docToDelete.path}`);
+      }
+    } catch (fileError) {
+      console.error('Error eliminando archivo físico:', fileError);
+      // Continuar aunque falle la eliminación del archivo
+    }
+
+    // Eliminar JSON procesado si existe
+    try {
+      const jsonFileName = path.basename(docToDelete.path || documentName, '.pdf') + '.json';
+      const jsonPath = path.join(process.cwd(), 'chroma_db', classId, jsonFileName);
+      await unlink(jsonPath);
+      console.log(`✅ JSON procesado eliminado: ${jsonPath}`);
+    } catch (jsonError) {
+      console.log('No se encontró JSON procesado o error al eliminar');
+    }
+
+    // Eliminar de la base de datos
+    await ClassModel.findByIdAndUpdate(
+      classId,
+      {
+        $pull: {
+          documents: { name: documentName }
+        }
+      }
+    );
+
+    return NextResponse.json({
+      success: true,
+      message: 'Documento eliminado exitosamente'
+    });
+  } catch (error) {
+    console.error('Error deleting document:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+    return NextResponse.json({ 
+      error: 'Error al eliminar documento',
+      details: errorMessage 
+    }, { status: 500 });
+  }
+}
