@@ -1,26 +1,276 @@
-@import "tailwindcss";
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+/* Variables CSS modernas */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --primary-color: #4f46e5;
+  --primary-dark: #4338ca;
+  --secondary-color: #06b6d4;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  --text-primary: #000000;
+  --text-secondary: #374151;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --border-color: #e5e7eb;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Reset y base moderna */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text-primary) !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  line-height: 1.6;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* Tipografía moderna */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+
+p, span, div, label {
+  color: var(--text-primary) !important;
+  font-weight: 500 !important;
+  line-height: 1.6;
+}
+
+/* Enlaces mejorados */
+a {
+  color: var(--primary-color) !important;
+  font-weight: 600 !important;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+a:hover {
+  color: var(--primary-dark) !important;
+  transform: translateY(-1px);
+}
+
+/* Navegación moderna */
+nav {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+nav a, nav span {
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+nav a:hover {
+  background-color: var(--bg-secondary);
+  transform: translateY(-1px);
+}
+
+/* Botones modernos */
+button {
+  color: white !important;
+  font-weight: 600 !important;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  border: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--success-color), #059669);
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, var(--warning-color), #d97706);
+}
+
+/* Formularios elegantes */
+input, textarea, select {
+  color: var(--text-primary) !important;
+  font-weight: 500 !important;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 0.75rem;
+  background-color: var(--bg-primary);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Tarjetas modernas */
+.card, .bg-white {
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 1rem !important;
+  box-shadow: var(--shadow) !important;
+  transition: all 0.3s ease !important;
+  overflow: hidden;
+}
+
+.card:hover, .bg-white:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+/* Chat moderno */
+.chat-container {
+  background: var(--bg-primary);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.chat-message {
+  color: var(--text-primary) !important;
+  padding: 1rem;
+  border-radius: 1rem;
+  margin: 0.5rem 0;
+  animation: slideIn 0.3s ease;
+}
+
+.chat-user {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white !important;
+  margin-left: auto;
+  max-width: 80%;
+}
+
+.chat-ai {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  max-width: 80%;
+}
+
+/* Animaciones suaves */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Efectos de carga */
+.loading {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Utilidades modernas */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.shadow-modern {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Responsive mejorado */
+@media (max-width: 768px) {
+  body {
+    font-size: 0.9rem;
+  }
+  
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.5rem; }
+  
+  .card, .bg-white {
+    margin: 0.5rem !important;
+    border-radius: 0.75rem !important;
+  }
+}
+
+/* Clases de Tailwind mejoradas */
+.text-gray-900,
+.text-gray-800,
+.text-gray-700,
+.text-gray-600,
+.text-gray-500,
+.text-gray-400 {
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
+}
+
+/* Estados interactivos */
+.interactive {
+  transition: all 0.2s ease;
+}
+
+.interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Indicadores de estado */
+.status-success { color: var(--success-color) !important; }
+.status-warning { color: var(--warning-color) !important; }
+.status-error { color: var(--error-color) !important; }

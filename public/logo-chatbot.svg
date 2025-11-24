@@ -1,0 +1,172 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo circular -->
+  <circle cx="200" cy="200" r="195" fill="#F8FAFC"/>
+  
+  <!-- Círculos exteriores -->
+  <circle cx="200" cy="200" r="190" stroke="#1E40AF" stroke-width="6" fill="none"/>
+  <circle cx="200" cy="200" r="170" stroke="#3B82F6" stroke-width="4" fill="none"/>
+  
+  <!-- Red de conexiones -->
+  <g stroke="#3B82F6" stroke-width="2" fill="#3B82F6">
+    <!-- Nodo superior -->
+    <circle cx="200" cy="40" r="6"/>
+    <line x1="200" y1="50" x2="200" y2="80"/>
+    
+    <!-- Nodos laterales superiores -->
+    <circle cx="120" cy="80" r="4"/>
+    <circle cx="280" cy="80" r="4"/>
+    <line x1="125" y1="85" x2="160" y2="110"/>
+    <line x1="275" y1="85" x2="240" y2="110"/>
+    
+    <!-- Nodos medios -->
+    <circle cx="60" cy="140" r="4"/>
+    <circle cx="340" cy="140" r="4"/>
+    <circle cx="50" cy="200" r="4"/>
+    <circle cx="350" cy="200" r="4"/>
+    <circle cx="60" cy="260" r="4"/>
+    <circle cx="340" cy="260" r="4"/>
+    
+    <!-- Conexiones medias -->
+    <line x1="65" y1="145" x2="120" y2="160"/>
+    <line x1="335" y1="145" x2="280" y2="160"/>
+    <line x1="55" y1="205" x2="110" y2="190"/>
+    <line x1="345" y1="205" x2="290" y2="190"/>
+    
+    <!-- Nodos inferiores -->
+    <circle cx="120" cy="320" r="4"/>
+    <circle cx="280" cy="320" r="4"/>
+    <circle cx="200" cy="350" r="4"/>
+    
+    <!-- Red interna de circuitos -->
+    <circle cx="140" cy="100" r="3"/>
+    <circle cx="260" cy="100" r="3"/>
+    <circle cx="100" cy="150" r="3"/>
+    <circle cx="300" cy="150" r="3"/>
+    <circle cx="110" cy="250" r="3"/>
+    <circle cx="290" cy="250" r="3"/>
+    <circle cx="150" cy="300" r="3"/>
+    <circle cx="250" cy="300" r="3"/>
+    
+    <!-- Líneas de conexión internas -->
+    <line x1="145" y1="105" x2="170" y2="125"/>
+    <line x1="255" y1="105" x2="230" y2="125"/>
+    <line x1="105" y1="155" x2="130" y2="175"/>
+    <line x1="295" y1="155" x2="270" y2="175"/>
+  </g>
+  
+  <!-- Puntos decorativos naranjas -->
+  <g fill="#F97316">
+    <circle cx="90" cy="120" r="3"/>
+    <circle cx="310" cy="120" r="3"/>
+    <circle cx="160" cy="70" r="2"/>
+    <circle cx="240" cy="70" r="2"/>
+    <circle cx="80" cy="280" r="3"/>
+    <circle cx="320" cy="280" r="3"/>
+    <circle cx="170" cy="330" r="2"/>
+    <circle cx="230" cy="330" r="2"/>
+  </g>
+  
+  <!-- Puntos azules decorativos -->
+  <g fill="#06B6D4" opacity="0.8">
+    <circle cx="130" cy="60" r="2"/>
+    <circle cx="270" cy="60" r="2"/>
+    <circle cx="70" cy="180" r="2"/>
+    <circle cx="330" cy="180" r="2"/>
+    <circle cx="360" cy="220" r="2"/>
+    <circle cx="40" cy="220" r="2"/>
+  </g>
+  
+  <!-- Robot principal -->
+  <g>
+    <!-- Cuerpo del robot -->
+    <ellipse cx="200" cy="170" rx="50" ry="35" fill="#1E293B"/>
+    <ellipse cx="200" cy="170" rx="45" ry="30" fill="#334155"/>
+    <ellipse cx="200" cy="170" rx="40" ry="25" fill="#475569"/>
+    
+    <!-- Cabeza/visor -->
+    <ellipse cx="200" cy="165" rx="35" ry="20" fill="#0F172A"/>
+    
+    <!-- Ojos brillantes -->
+    <circle cx="185" cy="165" r="8" fill="#06B6D4"/>
+    <circle cx="215" cy="165" r="8" fill="#06B6D4"/>
+    <circle cx="185" cy="165" r="5" fill="#67E8F9"/>
+    <circle cx="215" cy="165" r="5" fill="#67E8F9"/>
+    <circle cx="185" cy="163" r="3" fill="#FFFFFF"/>
+    <circle cx="215" cy="163" r="3" fill="#FFFFFF"/>
+    
+    <!-- Sonrisa -->
+    <path d="M 180 180 Q 200 190 220 180" stroke="#06B6D4" stroke-width="3" fill="none" stroke-linecap="round"/>
+    
+    <!-- Antenas -->
+    <line x1="170" y1="145" x2="165" y2="120" stroke="#475569" stroke-width="3"/>
+    <line x1="230" y1="145" x2="235" y2="120" stroke="#475569" stroke-width="3"/>
+    <circle cx="165" cy="120" r="4" fill="#F97316"/>
+    <circle cx="235" cy="120" r="4" fill="#F97316"/>
+    
+    <!-- Señales WiFi -->
+    <g stroke="#06B6D4" stroke-width="2" fill="none" opacity="0.8">
+      <path d="M 150 150 Q 165 140 180 150"/>
+      <path d="M 155 155 Q 165 148 175 155"/>
+      <path d="M 160 160 Q 165 156 170 160"/>
+    </g>
+  </g>
+  
+  <!-- Burbuja de chat -->
+  <g fill="#06B6D4">
+    <ellipse cx="280" cy="130" rx="25" ry="20"/>
+    <path d="M 270 145 L 260 155 L 275 148 Z"/>
+    <!-- Símbolo de play -->
+    <polygon points="275,125 285,130 275,135" fill="white"/>
+  </g>
+  
+  <!-- Libro abierto -->
+  <g>
+    <!-- Sombra del libro -->
+    <ellipse cx="205" cy="275" rx="60" ry="8" fill="#E2E8F0" opacity="0.5"/>
+    
+    <!-- Páginas del libro -->
+    <path d="M 140 250 L 200 240 L 260 250 L 260 285 L 200 275 L 140 285 Z" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+    
+    <!-- Páginas internas -->
+    <path d="M 145 255 L 200 247 L 255 255 L 255 280 L 200 272 L 145 280 Z" fill="#F1F5F9"/>
+    
+    <!-- Líneas de texto */
+    <line x1="155" y1="260" x2="190" y2="255" stroke="#CBD5E1" stroke-width="1.5"/>
+    <line x1="155" y1="265" x2="185" y2="261" stroke="#CBD5E1" stroke-width="1.5"/>
+    <line x1="155" y1="270" x2="180" y2="267" stroke="#CBD5E1" stroke-width="1.5"/>
+    
+    <line x1="210" y1="255" x2="245" y2="260" stroke="#CBD5E1" stroke-width="1.5"/>
+    <line x1="215" y1="261" x2="245" y2="265" stroke="#CBD5E1" stroke-width="1.5"/>
+    <line x1="220" y1="267" x2="245" y2="270" stroke="#CBD5E1" stroke-width="1.5"/>
+    
+    <!-- Separador central -->
+    <line x1="200" y1="240" x2="200" y2="275" stroke="#94A3B8" stroke-width="2"/>
+    
+    <!-- Marcador de libro -->
+    <rect x="195" y="230" width="10" height="25" fill="#F97316" rx="2"/>
+  </g>
+  
+  <!-- Elementos tecnológicos -->
+  <g>
+    <!-- Chip/CPU izquierdo -->
+    <rect x="90" y="220" width="20" height="20" rx="2" fill="#F97316"/>
+    <rect x="95" y="225" width="10" height="10" fill="#FFFFFF" rx="1"/>
+    <g stroke="#F97316" stroke-width="1">
+      <line x1="85" y1="225" x2="90" y2="225"/>
+      <line x1="85" y1="230" x2="90" y2="230"/>
+      <line x1="85" y1="235" x2="90" y2="235"/>
+      <line x1="110" y1="225" x2="115" y2="225"/>
+      <line x1="110" y1="230" x2="115" y2="230"/>
+      <line x1="110" y1="235" x2="115" y2="235"/>
+    </g>
+    
+    <!-- Engranaje derecho -->
+    <circle cx="320" cy="240" r="12" fill="#94A3B8"/>
+    <circle cx="320" cy="240" r="8" fill="#FFFFFF"/>
+    <circle cx="320" cy="240" r="4" fill="#64748B"/>
+    
+    <!-- Puntos de datos -->
+    <circle cx="160" cy="320" r="3" fill="#F97316"/>
+    <circle cx="240" cy="320" r="3" fill="#F97316"/>
+  </g>
+</svg>
