@@ -231,6 +231,7 @@ export default function Chatbot({ classes }: ChatbotProps) {
               >
                 <div className="text-sm prose prose-sm max-w-none dark:prose-invert">
                   <ReactMarkdown
+                    skipHtml={false}
                     components={{
                       p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
                       strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
