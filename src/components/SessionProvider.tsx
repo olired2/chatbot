@@ -20,7 +20,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         // Si pasaron más de 1 segundo, consideramos que se cerró el navegador
         if (timeSinceClosed > 1000) {
           localStorage.removeItem('session-closed');
-          signOut({ redirect: false });
+          signOut({ callbackUrl: '/auth/login', redirect: true });
         } else {
           // Fue solo un refresh, no cerrar sesión
           localStorage.removeItem('session-closed');
