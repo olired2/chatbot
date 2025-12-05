@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { hash } from 'bcrypt';
+import { hash } from 'bcryptjs';
 import { UserModel } from '@/models/User';
 import { ClassModel } from '@/models/Class';
 import { PreRegistrationModel } from '@/models/PreRegistration';
