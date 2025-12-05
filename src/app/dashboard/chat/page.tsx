@@ -31,7 +31,7 @@ export default async function ChatPage() {
     redirect('/auth/login');
   }
 
-  // Si es maestro, redirigir a clases en vez de chat
+  // Si es maestro, redirigir a dashboard de clases
   if (session.user.role === 'Maestro') {
     redirect('/dashboard/classes');
   }
