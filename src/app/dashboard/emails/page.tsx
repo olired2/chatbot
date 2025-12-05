@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
-import { authOptions } from '../../api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import MotivationalEmailManager from '@/components/MotivationalEmailManager';
 
 export default async function EmailManagementPage() {

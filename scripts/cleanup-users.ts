@@ -10,7 +10,7 @@ async function cleanupUsers() {
     console.log('✅ Conectado a MongoDB');
 
     // Remover campos duplicados de todos los usuarios
-    const result = await mongoose.connection.db.collection('users').updateMany(
+    const result = await mongoose.connection.db?.collection('users').updateMany(
       {},
       { 
         $unset: { 

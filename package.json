@@ -9,6 +9,9 @@
     "start": "next start",
     "lint": "eslint"
   },
+  "typescript": {
+    "ignoreBuildErrors": false
+  },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.1",
     "@google/generative-ai": "^0.24.1",
@@ -42,7 +45,13 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-hook-form": "^7.65.0",
-    "zod": "^4.1.12"
+    "zod": "^3.23.8"
+  },
+  "overrides": {
+    "zod": "^3.23.8"
+  },
+  "resolutions": {
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

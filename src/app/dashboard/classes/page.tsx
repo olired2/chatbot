@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import connectDB from '@/lib/db/mongodb';
 import { ClassModel } from '@/models/Class';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import ClassesClient from '@/components/ClassesClient';
 
 export default async function ClassesPage() {
