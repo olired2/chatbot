@@ -12,9 +12,9 @@ export default async function ClassesPage() {
     redirect('/auth/login');
   }
 
-  // Si es estudiante, redirigir a chat
+  // Si es estudiante, redirigir a su dashboard
   if (session.user.role === 'Estudiante') {
-    redirect('/dashboard/chat');
+    redirect('/estudiante');
   }
 
   await connectDB();

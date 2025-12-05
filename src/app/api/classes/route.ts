@@ -65,6 +65,7 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
+    console.log('SESSION OBJECT IN GET /api/classes:', JSON.stringify(session, null, 2));
     
     if (!session) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
