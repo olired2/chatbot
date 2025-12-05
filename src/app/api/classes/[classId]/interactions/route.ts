@@ -6,6 +6,9 @@ import { InteractionModel } from '@/models/Interaction';
 import { UserModel } from '@/models/User';
 import connectDB from '@/lib/db/mongodb';
 
+// Marcar como dinámico
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ classId: string }> }

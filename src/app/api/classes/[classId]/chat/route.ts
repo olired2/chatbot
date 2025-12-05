@@ -6,6 +6,9 @@ import { InteractionModel } from '@/models/Interaction';
 import connectDB from '@/lib/db/mongodb';
 import { queryDocuments } from '@/lib/ai/embeddings';
 
+// Marcar como dinámico
+export const dynamic = 'force-dynamic';
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ classId: string }> }
