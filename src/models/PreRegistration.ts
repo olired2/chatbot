@@ -45,8 +45,5 @@ const preRegistrationSchema = new mongoose.Schema({
   timestamps: false // Desactivamos timestamps automáticos ya que manejamos createdAt manualmente
 });
 
-// Índice para la expiración automática
-preRegistrationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-
 export const PreRegistrationModel = mongoose.models.PreRegistration || 
   mongoose.model('PreRegistration', preRegistrationSchema);
