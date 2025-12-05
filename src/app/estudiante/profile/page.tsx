@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { UserModel } from '@/models/User';
 import connectDB from '@/lib/db/mongodb';
 import ChangePasswordForm from '@/components/ChangePasswordForm';

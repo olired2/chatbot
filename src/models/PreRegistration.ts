@@ -33,26 +33,20 @@ const preRegistrationSchema = new mongoose.Schema({
   },
   expiresAt: {
     type: Date,
-    default: () => new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 horas desde creación
-    expires: 0 // MongoDB eliminará automáticamente cuando llegue a expiresAt
+    required: true,
+    default: Date.now,
+    expires: 0 // Los documentos expirarán basándose en este campo
   },
   createdAt: {
     type: Date,
     default: Date.now
   }
+}, {
+  timestamps: false // Desactivamos timestamps automáticos ya que manejamos createdAt manualmente
 });
 
-export interface IPreRegistration {
-  _id: string;
-  nombre: string;
-  email: string;
-  password: string;
-  rol: 'Maestro' | 'Estudiante';
-  institucion: string;
-  codigoClase?: string;
-  verificationToken: string;
-  expiresAt: Date;
-  createdAt: Date;
-}
+// Índice para la expiración automática
+preRegistrationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-export const PreRegistrationModel = mongoose.models.PreRegistration || mongoose.model<IPreRegistration>('PreRegistration', preRegistrationSchema);
+export const PreRegistrationModel = mongoose.models.PreRegistration || 
+  mongoose.model('PreRegistration', preRegistrationSchema);

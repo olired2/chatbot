@@ -110,7 +110,7 @@ export default function ReportGenerator({ classId, className }: ReportGeneratorP
       
       const recentInteractions = interactions.slice(-10).reverse();
       
-      recentInteractions.forEach((interaction, index) => {
+      recentInteractions.forEach((interaction: InteractionData, index: number) => {
         if (yPosition > pageHeight - 40) {
           pdf.addPage();
           yPosition = 20;
@@ -241,7 +241,7 @@ export default function ReportGenerator({ classId, className }: ReportGeneratorP
       yPosition += 15;
       
       // Mostrar todas las interacciones
-      interactions.reverse().forEach((interaction, index) => {
+      interactions.reverse().forEach((interaction: InteractionData, index: number) => {
         if (yPosition > pageHeight - 60) {
           pdf.addPage();
           yPosition = 20;

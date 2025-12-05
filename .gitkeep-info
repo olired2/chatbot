@@ -1,0 +1,8 @@
+# Archivos y Carpetas que NO deben subirse a GitHub
+
+# Carpetas con datos de usuario (contienen información sensible)
+uploads/
+chroma_db/
+
+# Archivos de configuración local
+.env.local

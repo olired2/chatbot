@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import connectDB from '@/lib/db/mongodb';
 import { ClassModel } from '@/models/Class';
 import Chatbot from '@/components/Chatbot';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 
 interface DocumentData {
   name?: string;
