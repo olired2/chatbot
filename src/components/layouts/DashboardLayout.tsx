@@ -122,7 +122,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       {session?.user?.name || session?.user?.email || 'Usuario'}
                     </p>
                     <p className="text-xs text-gray-500">
-                      Maestro
+                      {session?.user?.role || 'Usuario'}
                     </p>
                   </div>
                   <span className={`text-gray-400 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`}>

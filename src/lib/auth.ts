@@ -40,8 +40,8 @@ export const authOptions: NextAuthOptions = {
           return {
             id: user._id.toString(),
             email: user.email,
-            name: user.firstName + ' ' + user.lastName,
-            role: user.userType,
+            name: user.nombre,
+            role: user.rol,
           } as any;
         } catch (error) {
           console.error('Auth error:', error);
