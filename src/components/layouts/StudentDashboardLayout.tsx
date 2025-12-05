@@ -4,6 +4,7 @@ import { ReactNode, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import SessionCleanup from '@/components/SessionCleanup';
+import { useAutoLogout } from '@/lib/hooks/useAutoLogout';
 import { useSession, signOut } from 'next-auth/react';
 
 interface StudentDashboardLayoutProps {
@@ -12,6 +13,7 @@ interface StudentDashboardLayoutProps {
 
 export default function StudentDashboardLayout({ children }: StudentDashboardLayoutProps) {
   const { data: session } = useSession();
+  useAutoLogout(); // Auto-logout por inactividad
   const pathname = usePathname();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -50,14 +52,11 @@ export default function StudentDashboardLayout({ children }: StudentDashboardLay
   }, [isUserMenuOpen]);
 
   const toggleDropdown = (event: React.MouseEvent) => {
+    event.preventDefault();
     event.stopPropagation();
-    console.log('🔍 Toggling dropdown, current state:', isUserMenuOpen);
-    
-    setIsUserMenuOpen(prev => {
-      const newState = !prev;
-      console.log('🔄 New state will be:', newState);
-      return newState;
-    });
+    console.log('🔍 Clicking dropdown button - current state:', isUserMenuOpen);
+    setIsUserMenuOpen(!isUserMenuOpen);
+    console.log('🔄 New state will be:', !isUserMenuOpen);
   };
 
   return (
@@ -107,14 +106,18 @@ export default function StudentDashboardLayout({ children }: StudentDashboardLay
                   <span className={`text-gray-400 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`}>
                     ▼
                   </span>
+                  {isUserMenuOpen && (
+                    <span className="ml-2 text-xs bg-red-500 text-white px-1 rounded">ABIERTO</span>
+                  )}
                 </button>
 
                 {/* Dropdown Menu - Relative positioning */}
                 {isUserMenuOpen && (
                   <div 
                     ref={dropdownRef}
-                    className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 transform transition-all duration-200 ease-out z-50"
+                    className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border-2 border-indigo-200 transform transition-all duration-200 ease-out z-[9999]"
                     onClick={(e) => e.stopPropagation()}
+                    style={{ zIndex: 9999 }}
                   >
                     <div className="py-2">
                       {/* User Info Header */}

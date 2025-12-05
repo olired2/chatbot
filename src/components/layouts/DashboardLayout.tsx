@@ -4,6 +4,7 @@ import { ReactNode, useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import SessionCleanup from '@/components/SessionCleanup';
+import { useAutoLogout } from '@/lib/hooks/useAutoLogout';
 
 import { useSession, signOut } from 'next-auth/react';
 
@@ -13,6 +14,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { data: session } = useSession();
+  useAutoLogout(); // Auto-logout por inactividad
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [buttonPosition, setButtonPosition] = useState({ top: 0, right: 0 });
