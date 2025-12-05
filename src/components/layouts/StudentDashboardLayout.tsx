@@ -1,7 +1,6 @@
 'use client';
 
 import { ReactNode, useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import SessionCleanup from '@/components/SessionCleanup';
@@ -16,7 +15,6 @@ export default function StudentDashboardLayout({ children }: StudentDashboardLay
   const pathname = usePathname();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [buttonPosition, setButtonPosition] = useState({ top: 0, right: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -52,17 +50,8 @@ export default function StudentDashboardLayout({ children }: StudentDashboardLay
   }, [isUserMenuOpen]);
 
   const toggleDropdown = (event: React.MouseEvent) => {
-    event.stopPropagation(); // Prevenir propagación del evento
+    event.stopPropagation();
     console.log('🔍 Toggling dropdown, current state:', isUserMenuOpen);
-    
-    // Calcular posición del botón solo si se va a abrir
-    if (!isUserMenuOpen && buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      setButtonPosition({
-        top: rect.bottom + window.scrollY + 8,
-        right: window.innerWidth - rect.right
-      });
-    }
     
     setIsUserMenuOpen(prev => {
       const newState = !prev;
@@ -119,6 +108,55 @@ export default function StudentDashboardLayout({ children }: StudentDashboardLay
                     ▼
                   </span>
                 </button>
+
+                {/* Dropdown Menu - Relative positioning */}
+                {isUserMenuOpen && (
+                  <div 
+                    ref={dropdownRef}
+                    className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 transform transition-all duration-200 ease-out z-50"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="py-2">
+                      {/* User Info Header */}
+                      <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 rounded-t-xl">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {session?.user?.name || session?.user?.email || 'Usuario'}
+                        </p>
+                        <p className="text-xs text-indigo-600 font-medium">Estudiante</p>
+                      </div>
+                      
+                      {/* Menu Items */}
+                      <div className="py-1">
+                        <Link
+                          href="/estudiante/profile"
+                          className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                          onClick={() => {
+                            console.log('🔗 Profile link clicked');
+                            setIsUserMenuOpen(false);
+                          }}
+                        >
+                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                            <span className="text-sm">⚙️</span>
+                          </div>
+                          <span className="font-medium">Mi Perfil</span>
+                        </Link>
+                        
+                        <button
+                          onClick={() => {
+                            console.log('🚪 Logout clicked');
+                            signOut({ callbackUrl: '/auth/login' });
+                          }}
+                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors text-left"
+                        >
+                          <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                            <span className="text-sm">🚪</span>
+                          </div>
+                          <span className="font-medium">Cerrar sesión</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             
@@ -211,60 +249,7 @@ export default function StudentDashboardLayout({ children }: StudentDashboardLay
         </div>
       </main>
 
-      {/* Portal Dropdown - Final Design */}
-      {isUserMenuOpen && typeof window !== 'undefined' && createPortal(
-        <div 
-          ref={dropdownRef}
-          className="fixed bg-white rounded-xl shadow-lg border border-gray-200 w-56 transform transition-all duration-200 ease-out"
-          style={{ 
-            top: buttonPosition.top,
-            right: buttonPosition.right,
-            zIndex: 99999
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="py-2">
-            {/* User Info Header */}
-            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 rounded-t-xl">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {session?.user?.name || session?.user?.email || 'Usuario'}
-              </p>
-              <p className="text-xs text-indigo-600 font-medium">Estudiante</p>
-            </div>
-            
-            {/* Menu Items */}
-            <div className="py-1">
-              <Link
-                href="/estudiante/profile"
-                className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                onClick={() => {
-                  console.log('🔗 Profile link clicked');
-                  setIsUserMenuOpen(false);
-                }}
-              >
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                  <span className="text-sm">⚙️</span>
-                </div>
-                <span className="font-medium">Mi Perfil</span>
-              </Link>
-              
-              <button
-                onClick={() => {
-                  console.log('🚪 Logout clicked');
-                  signOut({ callbackUrl: '/auth/login' });
-                }}
-                className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors text-left"
-              >
-                <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
-                  <span className="text-sm">🚪</span>
-                </div>
-                <span className="font-medium">Cerrar sesión</span>
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+
     </div>
   );
 }
