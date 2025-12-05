@@ -3,6 +3,7 @@
 import { ReactNode, useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import SessionCleanup from '@/components/SessionCleanup';
 import { useSession, signOut } from 'next-auth/react';
 
@@ -12,7 +13,9 @@ interface StudentDashboardLayoutProps {
 
 export default function StudentDashboardLayout({ children }: StudentDashboardLayoutProps) {
   const { data: session } = useSession();
+  const pathname = usePathname();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [buttonPosition, setButtonPosition] = useState({ top: 0, right: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -122,25 +125,84 @@ export default function StudentDashboardLayout({ children }: StudentDashboardLay
             </div>
             
             {/* Mobile Navigation */}
-            <div className="sm:hidden flex items-center">
+            <div className="sm:hidden flex items-center space-x-2">
+              {/* Mobile User Button */}
               <button
-                onClick={() => signOut({ callbackUrl: '/auth/login' })}
-                className="bg-indigo-600 text-white px-3 py-2 rounded-md text-xs font-medium hover:bg-indigo-700 transition-colors"
+                ref={buttonRef}
+                type="button"
+                onClick={toggleDropdown}
+                className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-2 py-1 rounded-lg text-sm font-medium transition-all duration-150"
               >
-                Salir
+                <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">
+                  <span className="text-xs">🎓</span>
+                </div>
+                <span className="text-xs max-w-[60px] truncate">
+                  {session?.user?.name?.split(' ')[0] || 'Usuario'}
+                </span>
+              </button>
+              
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 p-2 rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {isMobileMenuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
               </button>
             </div>
           </div>
         </div>
         
         {/* Mobile Navigation Menu */}
-        <div className="sm:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 bg-gray-50 border-t border-gray-200">
-            <Link href="/estudiante" className="text-gray-800 hover:bg-gray-100 block px-3 py-2 rounded-md text-base font-medium">
-              🎓 Mis Clases
-            </Link>
+        {isMobileMenuOpen && (
+          <div className="sm:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 bg-gray-50 border-t border-gray-200">
+              {/* Mobile User Info */}
+              <div className="px-3 py-2 border-b border-gray-200 mb-2">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <span className="text-sm">🎓</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {session?.user?.name || 'Usuario'}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {session?.user?.role || 'Estudiante'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Mobile Navigation Links */}
+              <Link 
+                href="/estudiante" 
+                className={`text-gray-800 hover:bg-gray-100 block px-3 py-2 rounded-md text-base font-medium ${
+                  pathname === '/estudiante' ? 'bg-indigo-50 text-indigo-700 border-l-4 border-indigo-500' : ''
+                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                🎓 Mis Clases
+              </Link>
+              
+              {/* Mobile Sign Out */}
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  signOut({ callbackUrl: '/auth/login' });
+                }}
+                className="w-full text-left text-red-600 hover:bg-red-50 block px-3 py-2 rounded-md text-base font-medium"
+              >
+                🚪 Cerrar Sesión
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </nav>
 
       <main className="py-8">

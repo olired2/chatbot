@@ -136,16 +136,16 @@ export default function Chatbot({ classes }: ChatbotProps) {
   return (
     <div className="bg-white rounded-lg shadow-xl overflow-hidden">
       {/* Header con selección de clase */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-3 sm:p-4">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold">🤖 Mentor IA</h2>
+          <h2 className="text-base sm:text-lg font-semibold">🤖 Mentor IA</h2>
           {messages.length > 0 && (
             <button
               onClick={loadChatHistory}
-              className="text-xs bg-white/20 hover:bg-white/30 px-3 py-1 rounded transition-colors"
+              className="text-xs bg-white/20 hover:bg-white/30 px-2 sm:px-3 py-1 rounded transition-colors"
               title="Recargar historial"
             >
-              🔄 Recargar
+              🔄 <span className="hidden sm:inline">Recargar</span>
             </button>
           )}
         </div>
@@ -187,7 +187,7 @@ export default function Chatbot({ classes }: ChatbotProps) {
       )}
 
       {/* Área de mensajes */}
-      <div className="h-96 p-4 overflow-y-auto bg-gray-50">
+      <div className="h-64 sm:h-96 p-3 sm:p-4 overflow-y-auto bg-gray-50">
         {loadingHistory ? (
           <div className="text-center py-12 text-gray-500">
             <div className="animate-spin mx-auto h-8 w-8 border-4 border-indigo-600 border-t-transparent rounded-full mb-4"></div>
@@ -260,7 +260,7 @@ export default function Chatbot({ classes }: ChatbotProps) {
       </div>
 
       {/* Área de input */}
-      <form onSubmit={handleSubmit} className="p-4 border-t bg-white">
+      <form onSubmit={handleSubmit} className="p-3 sm:p-4 border-t bg-white">
         {error && (
           <div className="mb-2 text-xs text-red-600 bg-red-50 p-2 rounded">
             {error}
@@ -273,20 +273,23 @@ export default function Chatbot({ classes }: ChatbotProps) {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Escribe tu pregunta aquí..."
             disabled={loading}
-            className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 placeholder-gray-500 text-gray-900"
+            className="flex-1 p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 placeholder-gray-500 text-gray-900 text-sm sm:text-base"
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+            className="px-3 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base min-w-[60px] sm:min-w-auto"
           >
             {loading ? (
-              <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
             ) : (
-              'Enviar'
+              <>
+                <span className="hidden sm:inline">Enviar</span>
+                <span className="sm:hidden">📤</span>
+              </>
             )}
           </button>
         </div>
