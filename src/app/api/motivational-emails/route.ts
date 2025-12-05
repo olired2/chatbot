@@ -1,10 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { checkAndSendMotivationalEmails, getMotivationalEmailStats } from '@/lib/email/email-automation';
 
+// Marcar como dinámico para evitar generación estática
+export const dynamic = 'force-dynamic';
+
 // GET: Obtener estadísticas de correos motivacionales
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -12,8 +15,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const url = new URL(req.url);
-    const classId = url.searchParams.get('classId');
+    const classId = req.nextUrl.searchParams.get('classId');
 
     const stats = await getMotivationalEmailStats(classId || undefined);
     

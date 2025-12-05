@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+
+// Marcar como dinámico
+export const dynamic = 'force-dynamic';
 import { UserModel } from '@/models/User';
 import connectDB from '@/lib/db/mongodb';
 import bcrypt from 'bcryptjs';

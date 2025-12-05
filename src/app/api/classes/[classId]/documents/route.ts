@@ -7,6 +7,9 @@ import { processPDFDocument } from '@/lib/ai/embeddings';
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import path from 'path';
 
+// Marcar como dinámico
+export const dynamic = 'force-dynamic';
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ classId: string }> }

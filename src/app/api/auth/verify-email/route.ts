@@ -5,10 +5,12 @@ import { PreRegistrationModel } from '@/models/PreRegistration';
 import connectDB from '@/lib/db/mongodb';
 import { isTokenValid } from '@/lib/email/verification';
 
+// Marcar como dinámico para evitar generación estática
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
-    const url = new URL(req.url);
-    const token = url.searchParams.get('token');
+    const token = req.nextUrl.searchParams.get('token');
 
     if (!token) {
       return NextResponse.json(
