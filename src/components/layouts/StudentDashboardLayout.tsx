@@ -97,7 +97,7 @@ export default function StudentDashboardLayout({ children }: StudentDashboardLay
 
             {/* Desktop User Menu */}
             <div className="hidden sm:ml-6 sm:flex sm:items-center">
-              <div className="relative" ref={dropdownRef} style={{ position: 'relative', zIndex: 9999 }}>
+              <div className="relative">
                 <button
                   ref={buttonRef}
                   type="button"
@@ -112,15 +112,13 @@ export default function StudentDashboardLayout({ children }: StudentDashboardLay
                       {session?.user?.name || session?.user?.email || 'Usuario'}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {session?.user?.role || 'Usuario'}
+                      {session?.user?.role || 'Estudiante'}
                     </p>
                   </div>
                   <span className={`text-gray-400 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`}>
                     ▼
                   </span>
                 </button>
-
-
               </div>
             </div>
             
@@ -229,7 +227,7 @@ export default function StudentDashboardLayout({ children }: StudentDashboardLay
             {/* User Info Header */}
             <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 rounded-t-xl">
               <p className="text-sm font-medium text-gray-900 truncate">
-                {session?.user?.nombre || session?.user?.email || 'Usuario'}
+                {session?.user?.name || session?.user?.email || 'Usuario'}
               </p>
               <p className="text-xs text-indigo-600 font-medium">Estudiante</p>
             </div>
