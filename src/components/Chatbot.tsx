@@ -238,8 +238,8 @@ export default function Chatbot({ classes }: ChatbotProps) {
                       ul: ({node, ...props}) => <ul className="list-disc list-inside mb-2" {...props} />,
                       ol: ({node, ...props}) => <ol className="list-decimal list-inside mb-2" {...props} />,
                       li: ({node, ...props}) => <li className="mb-1" {...props} />,
-                      code: ({node, inline, ...props}) => 
-                        inline ? (
+                      code: ({node, ...props}: any) => 
+                        props.inline ? (
                           <code className="bg-gray-200 px-1 rounded text-xs" {...props} />
                         ) : (
                           <code className="block bg-gray-200 p-2 rounded mb-2 text-xs overflow-x-auto" {...props} />
