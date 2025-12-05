@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -228,9 +229,31 @@ export default function Chatbot({ classes }: ChatbotProps) {
                     : 'bg-white border border-gray-200 text-gray-800'
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                <div className="text-sm prose prose-sm max-w-none dark:prose-invert">
+                  <ReactMarkdown
+                    components={{
+                      p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                      strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
+                      em: ({node, ...props}) => <em className="italic" {...props} />,
+                      ul: ({node, ...props}) => <ul className="list-disc list-inside mb-2" {...props} />,
+                      ol: ({node, ...props}) => <ol className="list-decimal list-inside mb-2" {...props} />,
+                      li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                      code: ({node, inline, ...props}) => 
+                        inline ? (
+                          <code className="bg-gray-200 px-1 rounded text-xs" {...props} />
+                        ) : (
+                          <code className="block bg-gray-200 p-2 rounded mb-2 text-xs overflow-x-auto" {...props} />
+                        ),
+                      h1: ({node, ...props}) => <h1 className="text-lg font-bold mb-2" {...props} />,
+                      h2: ({node, ...props}) => <h2 className="text-base font-bold mb-2" {...props} />,
+                      h3: ({node, ...props}) => <h3 className="text-sm font-bold mb-1" {...props} />,
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
                 <p
-                  className={`text-xs mt-1 ${
+                  className={`text-xs mt-2 ${
                     message.role === 'user'
                       ? 'text-indigo-200'
                       : 'text-gray-500'
