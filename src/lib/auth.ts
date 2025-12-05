@@ -61,6 +61,19 @@ export const authOptions: NextAuthOptions = {
     maxAge: 4 * 60 * 60, // 4 hours
   },
   
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: undefined, // Cookie expira al cerrar el navegador
+      },
+    },
+  },
+  
   callbacks: {
     async jwt({ token, user }: { token: JWT; user?: any }) {
       if (user) {
