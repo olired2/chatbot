@@ -4,8 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { ClassModel } from '@/models/Class';
 import connectDB from '@/lib/db/mongodb';
 import { processPDFDocument } from '@/lib/ai/embeddings';
-import { writeFile, mkdir, unlink } from 'fs/promises';
-import path from 'path';
+import { put, del } from '@vercel/blob';
 
 // Marcar como dinámico
 export const dynamic = 'force-dynamic';
@@ -49,24 +48,24 @@ export async function POST(
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     
-    // Crear directorio si no existe
-    const uploadDir = path.join(process.cwd(), 'uploads', classId);
-    await mkdir(uploadDir, { recursive: true });
-    
-    // Guardar archivo
+    // Subir a Vercel Blob Storage
     const fileName = `${Date.now()}_${file.name}`;
-    const filePath = path.join(uploadDir, fileName);
-    await writeFile(filePath, buffer);
+    const blobPath = `uploads/${classId}/${fileName}`;
     
-    console.log(`Archivo guardado en: ${filePath}`);
+    const blob = await put(blobPath, buffer, {
+      access: 'private',
+      contentType: 'application/pdf',
+    });
+    
+    console.log(`Archivo subido a Blob Storage: ${blob.url}`);
 
     // Procesar PDF y crear embeddings
     try {
-      await processPDFDocument(filePath, classId);
+      await processPDFDocument(blob.url, classId);
       console.log('Embeddings creados exitosamente');
     } catch (embeddingError) {
       console.error('Error al crear embeddings:', embeddingError);
-      // Continuar aunque falle el embedding, se puede procesar después
+      // Continuar aunque faille el embedding
     }
 
     // Actualizar documento de la clase
@@ -76,7 +75,7 @@ export async function POST(
         $push: {
           documents: {
             name: file.name,
-            path: filePath,
+            path: blob.url,
             size: file.size,
             uploadedAt: new Date(),
             embeddings: true,
