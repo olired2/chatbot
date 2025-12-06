@@ -53,7 +53,7 @@ export async function POST(
     const blobPath = `uploads/${classId}/${fileName}`;
     
     const blob = await put(blobPath, buffer, {
-      access: 'private',
+      access: 'public',
       contentType: 'application/pdf',
     });
     
