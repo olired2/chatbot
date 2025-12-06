@@ -177,25 +177,15 @@ export async function DELETE(
       return NextResponse.json({ error: 'Documento no encontrado' }, { status: 404 });
     }
 
-    // Eliminar archivo físico si existe
+    // Eliminar archivo de Vercel Blob Storage si existe
     try {
       if (docToDelete.path) {
-        await unlink(docToDelete.path);
-        console.log(`✅ Archivo eliminado: ${docToDelete.path}`);
+        await del(docToDelete.path);
+        console.log(`✅ Archivo eliminado de Blob Storage: ${docToDelete.path}`);
       }
     } catch (fileError) {
-      console.error('Error eliminando archivo físico:', fileError);
+      console.error('Error eliminando archivo de Blob Storage:', fileError);
       // Continuar aunque falle la eliminación del archivo
-    }
-
-    // Eliminar JSON procesado si existe
-    try {
-      const jsonFileName = path.basename(docToDelete.path || documentName, '.pdf') + '.json';
-      const jsonPath = path.join(process.cwd(), 'chroma_db', classId, jsonFileName);
-      await unlink(jsonPath);
-      console.log(`✅ JSON procesado eliminado: ${jsonPath}`);
-    } catch (jsonError) {
-      console.log('No se encontró JSON procesado o error al eliminar');
     }
 
     // Eliminar de la base de datos
