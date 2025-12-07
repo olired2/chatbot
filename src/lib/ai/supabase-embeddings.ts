@@ -39,7 +39,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     }
     
     const response = await fetch(
-      'https://api-inference.huggingface.co/models/intfloat/e5-small-v2',
+      'https://router.huggingface.co/inference/intfloat/e5-small-v2',
       {
         method: 'POST',
         headers: {
@@ -50,19 +50,19 @@ export async function generateEmbedding(text: string): Promise<number[]> {
       }
     );
     
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Hugging Face API error: ${response.statusText} - ${error}`);
-    }
+    const data = await response.json();
     
-    const result = await response.json();
+    if (!response.ok) {
+      console.error('Error HuggingFace:', data);
+      throw new Error(`Error generando embedding: ${JSON.stringify(data)}`);
+    }
     
     // Verificar que la respuesta es un array de embeddings
-    if (Array.isArray(result) && Array.isArray(result[0])) {
-      return result[0];
+    if (Array.isArray(data) && Array.isArray(data[0])) {
+      return data[0];
     }
     
-    throw new Error(`Invalid embedding response format: ${JSON.stringify(result)}`);
+    throw new Error(`Invalid embedding response format: ${JSON.stringify(data)}`);
   } catch (error) {
     console.error('Error generando embedding:', error);
     throw error;
