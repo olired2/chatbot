@@ -40,9 +40,10 @@ export async function POST(
     
     // Permitir desde el mismo servidor o con token válido
     const isInternal = authHeader === `Bearer ${internalToken}`;
+    let session = null;
     
     if (!isInternal) {
-      const session = await getServerSession(authOptions);
+      session = await getServerSession(authOptions);
       
       // Verificar autenticación
       if (!session || session.user.role !== 'Maestro') {
@@ -52,13 +53,13 @@ export async function POST(
 
     await connectDB();
 
-    // Verificar que la clase existe y pertenece al maestro
+    // Verificar que la clase existe y pertenece al maestro (solo si no es llamada interna)
     const classDoc = await ClassModel.findById(classId);
     if (!classDoc) {
       return NextResponse.json({ error: 'Clase no encontrada' }, { status: 404 });
     }
 
-    if (classDoc.teacher.toString() !== session.user.id) {
+    if (!isInternal && session && classDoc.teacher.toString() !== session.user.id) {
       return NextResponse.json(
         { error: 'No tienes permiso para modificar esta clase' },
         { status: 403 }
