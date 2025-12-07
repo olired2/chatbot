@@ -58,10 +58,6 @@ export async function POST(
     
     console.log(`Archivo subido a Blob Storage: ${blob.url}`);
 
-    // Nota: El procesamiento de embeddings es manual ahora
-    // Los usuarios pueden hacer clic en "Procesar" en la UI
-    // para generar embeddings en /api/classes/[classId]/documents/process
-
     // Actualizar documento de la clase
     const updatedClass = await ClassModel.findByIdAndUpdate(
       classId,
@@ -72,17 +68,44 @@ export async function POST(
             path: blob.url,
             size: file.size,
             uploadedAt: new Date(),
-            embeddings: true,
-            processedAt: new Date()
+            embeddings: false,
+            processed: false
           }
         }
       },
       { new: true }
     );
 
+    // Procesar embeddings automáticamente en background
+    console.log(`🔄 Iniciando procesamiento de embeddings para: ${file.name}`);
+    try {
+      const processResponse = await fetch(
+        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/classes/${classId}/documents/process`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            documentId: updatedClass.documents[updatedClass.documents.length - 1]._id,
+            documentUrl: blob.url,
+          }),
+        }
+      );
+
+      if (processResponse.ok) {
+        console.log('✅ Procesamiento iniciado exitosamente');
+      } else {
+        console.error('⚠️ Error iniciando procesamiento:', await processResponse.text());
+      }
+    } catch (processError) {
+      console.error('⚠️ Error en procesamiento background:', processError);
+      // No fallar la subida si falla el procesamiento
+    }
+
     return NextResponse.json({
       success: true,
-      message: 'Documento subido exitosamente',
+      message: 'Documento subido y procesándose',
       document: {
         name: file.name,
         size: file.size,
