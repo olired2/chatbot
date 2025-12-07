@@ -28,18 +28,35 @@ export interface DocumentChunk {
 }
 
 /**
- * Genera embedding para un texto usando Groq
+ * Genera embedding para un texto usando Hugging Face (gratis)
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
     initializeClients();
-    const response = await groq.embeddings.create({
-      model: 'nomic-embed-text-v1.5',
-      input: text,
+    
+    const hfToken = process.env.HUGGINGFACE_API_KEY;
+    
+    if (!hfToken) {
+      throw new Error('HUGGINGFACE_API_KEY no configurada');
+    }
+    
+    const response = await fetch('https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2', {
+      headers: { Authorization: `Bearer ${hfToken}` },
+      method: 'POST',
+      body: JSON.stringify({ inputs: text }),
     });
-
-    const embedding = response.data[0].embedding;
-    return Array.isArray(embedding) ? embedding : JSON.parse(embedding as string);
+    
+    if (!response.ok) {
+      throw new Error(`Hugging Face API error: ${response.statusText}`);
+    }
+    
+    const result = await response.json() as number[][];
+    
+    if (Array.isArray(result) && Array.isArray(result[0])) {
+      return result[0];
+    }
+    
+    throw new Error('Invalid embedding response format');
   } catch (error) {
     console.error('Error generando embedding:', error);
     throw error;

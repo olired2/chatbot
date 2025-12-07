@@ -14,7 +14,12 @@ Para desplegar este proyecto en Vercel, necesitas configurar las siguientes vari
 
 ### APIs Externas
 - `GOOGLE_API_KEY`: API Key de Google
-- `GROQ_API_KEY`: API Key de Groq AI
+- `GROQ_API_KEY`: API Key de Groq AI (para chat)
+- `HUGGINGFACE_API_KEY`: API Key de Hugging Face (para embeddings - gratis)
+
+### Supabase (Vector Search)
+- `SUPABASE_URL`: URL de tu proyecto Supabase
+- `SUPABASE_SERVICE_ROLE_KEY`: Service Role Key de Supabase (para almacenar embeddings)
 
 ### Configuración de Email
 - `EMAIL_FROM`: Email desde el cual enviar correos
