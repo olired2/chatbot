@@ -4,7 +4,9 @@ import { authOptions } from '@/lib/auth';
 import { ClassModel } from '@/models/Class';
 import connectDB from '@/lib/db/mongodb';
 import { generateEmbedding, storeEmbeddings, DocumentChunk } from '@/lib/ai/supabase-embeddings';
-import pdfParse from 'pdf-parse';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.js';
+
+export const dynamic = 'force-dynamic';
 
 /**
  * Divide texto en chunks
@@ -73,9 +75,18 @@ export async function POST(
 
     const pdfBuffer = Buffer.from(await pdfResponse.arrayBuffer());
 
-    // Parsear el PDF con pdf-parse
-    const pdfData = await pdfParse(pdfBuffer);
-    const fullText = pdfData.text;
+    // Parsear el PDF con pdfjs
+    const pdf = await pdfjsLib.getDocument({ data: pdfBuffer }).promise;
+    let fullText = '';
+
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item: any) => (item.str ? item.str : ''))
+        .join(' ');
+      fullText += pageText + '\n';
+    }
 
     if (fullText.trim().length === 0) {
       return NextResponse.json(
