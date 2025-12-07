@@ -28,35 +28,41 @@ export interface DocumentChunk {
 }
 
 /**
- * Genera embedding para un texto usando Hugging Face (gratis)
+ * Genera embedding para un texto usando Hugging Face (intfloat/e5-small-v2)
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
-    initializeClients();
-    
     const hfToken = process.env.HUGGINGFACE_API_KEY;
     
     if (!hfToken) {
       throw new Error('HUGGINGFACE_API_KEY no configurada');
     }
     
-    const response = await fetch('https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2', {
-      headers: { Authorization: `Bearer ${hfToken}` },
-      method: 'POST',
-      body: JSON.stringify({ inputs: text }),
-    });
+    const response = await fetch(
+      'https://api-inference.huggingface.co/models/intfloat/e5-small-v2',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${hfToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ inputs: text }),
+      }
+    );
     
     if (!response.ok) {
-      throw new Error(`Hugging Face API error: ${response.statusText}`);
+      const error = await response.text();
+      throw new Error(`Hugging Face API error: ${response.statusText} - ${error}`);
     }
     
-    const result = await response.json() as number[][];
+    const result = await response.json();
     
+    // Verificar que la respuesta es un array de embeddings
     if (Array.isArray(result) && Array.isArray(result[0])) {
       return result[0];
     }
     
-    throw new Error('Invalid embedding response format');
+    throw new Error(`Invalid embedding response format: ${JSON.stringify(result)}`);
   } catch (error) {
     console.error('Error generando embedding:', error);
     throw error;
