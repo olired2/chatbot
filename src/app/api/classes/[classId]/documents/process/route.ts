@@ -83,11 +83,12 @@ export async function POST(
       throw new Error(`Error descargando PDF: ${pdfResponse.statusText}`);
     }
 
-    const pdfBuffer = Buffer.from(await pdfResponse.arrayBuffer());
+    const pdfArrayBuffer = await pdfResponse.arrayBuffer();
+    const pdfData = new Uint8Array(pdfArrayBuffer);
 
     // Parsear el PDF dinámicamente con pdfjs
     const pdfjsLib = await import('pdfjs-dist');
-    const pdf = await pdfjsLib.getDocument({ data: pdfBuffer }).promise;
+    const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
     let fullText = '';
 
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
