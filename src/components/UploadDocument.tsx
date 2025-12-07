@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface UploadDocumentProps {
   classId: string;
@@ -12,6 +13,7 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const router = useRouter();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -59,6 +61,9 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
       // Reset file input
       const fileInput = document.getElementById('file-upload') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
+
+      // Refrescar la página para mostrar el nuevo documento
+      router.refresh();
 
       // Llamar callback si existe
       if (onUploadSuccess) {
