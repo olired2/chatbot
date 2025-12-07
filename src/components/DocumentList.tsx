@@ -9,6 +9,7 @@ interface Document {
   size?: number;
   embeddings?: boolean;
   path: string;
+  _id?: string;
 }
 
 interface DocumentListProps {
@@ -18,6 +19,7 @@ interface DocumentListProps {
 
 export default function DocumentList({ classId, documents }: DocumentListProps) {
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [processing, setProcessing] = useState<string | null>(null);
   const router = useRouter();
 
   const handleDelete = async (docName: string) => {
@@ -47,6 +49,37 @@ export default function DocumentList({ classId, documents }: DocumentListProps) 
       alert('Error al eliminar el documento');
     } finally {
       setDeleting(null);
+    }
+  };
+
+  const handleProcess = async (doc: Document) => {
+    setProcessing(doc.name);
+
+    try {
+      const response = await fetch(`/api/classes/${classId}/documents/process`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          documentId: doc._id || doc.name,
+          documentUrl: doc.path,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.details || data.error || 'Error al procesar documento');
+      }
+
+      alert(`✅ Documento procesado exitosamente en ${data.chunks} fragmentos`);
+      router.refresh();
+    } catch (error) {
+      console.error('Error:', error);
+      alert(`❌ ${error instanceof Error ? error.message : 'Error al procesar documento'}`);
+    } finally {
+      setProcessing(null);
     }
   };
 
@@ -102,9 +135,29 @@ export default function DocumentList({ classId, documents }: DocumentListProps) 
                   ✓ Procesado
                 </span>
               ) : (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                  ⏳ Pendiente
-                </span>
+                <>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    ⏳ Pendiente
+                  </span>
+                  <button
+                    onClick={() => handleProcess(doc)}
+                    disabled={processing === doc.name}
+                    className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    title="Procesar documento para búsqueda semántica"
+                  >
+                    {processing === doc.name ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Procesando...
+                      </>
+                    ) : (
+                      'Procesar'
+                    )}
+                  </button>
+                </>
               )}
               <button
                 onClick={() => handleDelete(doc.name)}
