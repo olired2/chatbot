@@ -4,15 +4,8 @@ import { authOptions } from '@/lib/auth';
 import { ClassModel } from '@/models/Class';
 import connectDB from '@/lib/db/mongodb';
 import { generateEmbedding, storeEmbeddings, DocumentChunk } from '@/lib/ai/supabase-embeddings';
-import * as pdfjsLib from 'pdfjs-dist';
 
 export const dynamic = 'force-dynamic';
-
-// Set up PDF.js worker
-if (typeof window === 'undefined') {
-  const pdfjsWorker = require('pdfjs-dist/build/pdf.worker');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
-}
 
 /**
  * Divide texto en chunks
@@ -81,7 +74,8 @@ export async function POST(
 
     const pdfBuffer = Buffer.from(await pdfResponse.arrayBuffer());
 
-    // Parsear el PDF con pdfjs
+    // Parsear el PDF dinámicamente con pdfjs
+    const pdfjsLib = await import('pdfjs-dist');
     const pdf = await pdfjsLib.getDocument({ data: pdfBuffer }).promise;
     let fullText = '';
 
