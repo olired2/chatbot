@@ -31,50 +31,76 @@ export interface DocumentChunk {
  * Genera embedding para un texto usando Hugging Face (sentence-transformers/all-MiniLM-L6-v2)
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
-  try {
-    const hfToken = process.env.HUGGINGFACE_API_KEY;
-    
-    if (!hfToken) {
-      throw new Error('HUGGINGFACE_API_KEY no configurada');
-    }
-    
-    const response = await fetch(
-      'https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${hfToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ inputs: text }),
-      }
-    );
-    
-    const responseText = await response.text();
-    
-    if (!response.ok) {
-      console.error('HuggingFace error response:', responseText);
-      throw new Error(`HuggingFace API error (${response.status}): ${responseText}`);
-    }
-    
-    let data;
+  const maxRetries = 3;
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      data = JSON.parse(responseText);
-    } catch (e) {
-      console.error('Failed to parse JSON response:', responseText);
-      throw new Error(`Invalid JSON response: ${responseText}`);
+      const hfToken = process.env.HUGGINGFACE_API_KEY;
+      
+      if (!hfToken) {
+        throw new Error('HUGGINGFACE_API_KEY no configurada');
+      }
+      
+      console.log(`⏳ Intento ${attempt}/${maxRetries} generando embedding...`);
+      
+      const response = await fetch(
+        'https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${hfToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ inputs: text }),
+        }
+      );
+      
+      const responseText = await response.text();
+      
+      if (!response.ok) {
+        console.error(`❌ HuggingFace error (${response.status}):`, responseText);
+        
+        // Si es 503 (Service Unavailable) o 500, reintentar
+        if (response.status === 503 || response.status === 500) {
+          if (attempt < maxRetries) {
+            console.log(`⏸️ Esperando 2 segundos antes de reintentar...`);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            continue;
+          }
+        }
+        
+        throw new Error(`HuggingFace API error (${response.status}): ${responseText}`);
+      }
+      
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Failed to parse JSON response:', responseText);
+        throw new Error(`Invalid JSON response: ${responseText}`);
+      }
+      
+      // Verificar que la respuesta es un array de embeddings
+      if (Array.isArray(data) && Array.isArray(data[0])) {
+        console.log(`✅ Embedding generado exitosamente (${data[0].length} dimensiones)`);
+        return data[0];
+      }
+      
+      throw new Error(`Invalid embedding response format: ${JSON.stringify(data)}`);
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      console.error(`❌ Intento ${attempt} falló:`, lastError.message);
+      
+      if (attempt < maxRetries) {
+        console.log(`⏸️ Esperando antes de reintentar...`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      }
     }
-    
-    // Verificar que la respuesta es un array de embeddings
-    if (Array.isArray(data) && Array.isArray(data[0])) {
-      return data[0];
-    }
-    
-    throw new Error(`Invalid embedding response format: ${JSON.stringify(data)}`);
-  } catch (error) {
-    console.error('Error generando embedding:', error);
-    throw error;
   }
+  
+  console.error('❌ Error generando embedding después de todos los intentos:', lastError);
+  throw lastError || new Error('Error generando embedding');
 }
 
 /**
