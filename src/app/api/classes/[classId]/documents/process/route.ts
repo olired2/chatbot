@@ -86,10 +86,40 @@ export async function POST(
     const pdfArrayBuffer = await pdfResponse.arrayBuffer();
     const pdfBuffer = Buffer.from(pdfArrayBuffer);
 
-    // Parsear el PDF con pdf-parse
-    const pdfParse = (await import('pdf-parse')).default;
-    const pdf = await pdfParse(pdfBuffer);
-    const fullText = pdf.text;
+    // Parsear el PDF con pdf2json
+    const PDFParser = (await import('pdf2json')).default;
+    
+    const fullText = await new Promise<string>((resolve, reject) => {
+      const pdfParser = new PDFParser(null, true);
+      
+      pdfParser.on('pdfParser_dataError', (errData: any) => {
+        reject(new Error(`PDF parsing error: ${errData.parserError}`));
+      });
+      
+      pdfParser.on('pdfParser_dataReady', () => {
+        try {
+          let text = '';
+          
+          if (pdfParser.data && pdfParser.data.Pages) {
+            for (const page of pdfParser.data.Pages) {
+              if (page.Texts) {
+                for (const textObj of page.Texts) {
+                  if (textObj.R && textObj.R[0] && textObj.R[0].T) {
+                    text += decodeURIComponent(textObj.R[0].T) + ' ';
+                  }
+                }
+              }
+            }
+          }
+
+          resolve(text);
+        } catch (error) {
+          reject(error);
+        }
+      });
+      
+      pdfParser.parseBuffer(pdfBuffer);
+    });
 
     if (fullText.trim().length === 0) {
       return NextResponse.json(
