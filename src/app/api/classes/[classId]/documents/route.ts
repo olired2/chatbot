@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { ClassModel } from '@/models/Class';
 import connectDB from '@/lib/db/mongodb';
-import { processPDFDocument } from '@/lib/ai/embeddings';
 import { put, del } from '@vercel/blob';
 
 // Marcar como dinámico
@@ -59,14 +58,9 @@ export async function POST(
     
     console.log(`Archivo subido a Blob Storage: ${blob.url}`);
 
-    // Procesar PDF y crear embeddings
-    try {
-      await processPDFDocument(blob.url, classId);
-      console.log('Embeddings creados exitosamente');
-    } catch (embeddingError) {
-      console.error('Error al crear embeddings:', embeddingError);
-      // Continuar aunque faille el embedding
-    }
+    // Nota: El procesamiento de embeddings es manual ahora
+    // Los usuarios pueden hacer clic en "Procesar" en la UI
+    // para generar embeddings en /api/classes/[classId]/documents/process
 
     // Actualizar documento de la clase
     const updatedClass = await ClassModel.findByIdAndUpdate(

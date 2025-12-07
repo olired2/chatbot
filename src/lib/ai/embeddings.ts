@@ -524,6 +524,9 @@ function splitTextIntoChunks(text: string, chunkSize: number = 1000, overlap: nu
   return chunks;
 }
 
+// DEPRECATED: Esta función ha sido reemplazada por /api/classes/[classId]/documents/process
+// que usa Supabase Vector Storage en lugar de archivos locales
+/*
 export async function processPDFDocument(filePath: string, classId: string) {
   try {
     console.log(`📄 Procesando PDF: ${filePath}`);
@@ -616,6 +619,7 @@ export async function processPDFDocument(filePath: string, classId: string) {
     throw error;
   }
 }
+*/
 
 // Función para generar instrucciones específicas por tema
 function getThemeSpecificInstructions(primaryTheme: string): string {
