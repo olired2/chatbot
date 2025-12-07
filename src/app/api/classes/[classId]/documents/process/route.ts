@@ -158,10 +158,13 @@ export async function POST(
     }
 
     // Almacenar en Supabase
+    console.log(`💾 Guardando ${embeddingChunks.length} embeddings en Supabase...`);
     await storeEmbeddings(embeddingChunks);
+    console.log(`✅ Embeddings guardados exitosamente en Supabase`);
 
     // Actualizar documento en MongoDB para marcar como procesado
-    await ClassModel.findByIdAndUpdate(
+    console.log(`📝 Actualizando documento en MongoDB...`);
+    const updateResult = await ClassModel.findByIdAndUpdate(
       classId,
       {
         $set: {
@@ -173,6 +176,7 @@ export async function POST(
         arrayFilters: [{ 'doc.path': documentUrl }],
       }
     );
+    console.log(`✅ Documento marcado como procesado en MongoDB`);
 
     return NextResponse.json({
       success: true,
