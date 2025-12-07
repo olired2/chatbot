@@ -87,8 +87,8 @@ export async function POST(
     const pdfBuffer = Buffer.from(pdfArrayBuffer);
 
     // Parsear el PDF con pdf-parse
-    const pdfParse = await import('pdf-parse/lib/pdf-parse.js');
-    const pdf = await pdfParse.default(pdfBuffer);
+    const pdfParse = (await import('pdf-parse')).default;
+    const pdf = await pdfParse(pdfBuffer);
     const fullText = pdf.text;
 
     if (fullText.trim().length === 0) {
