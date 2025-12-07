@@ -79,19 +79,22 @@ Instrucciones:
 - Siempre sé educativo y alentador
 - Explica conceptos de forma clara y accesible`;
 
-      const message = await groq.messages.create({
+      const message = await groq.chat.completions.create({
         model: 'mixtral-8x7b-32768',
         max_tokens: 1024,
         messages: [
+          {
+            role: 'system',
+            content: systemPrompt
+          },
           {
             role: 'user',
             content: question
           }
         ],
-        system: systemPrompt,
       });
 
-      const answer = message.content[0].type === 'text' ? message.content[0].text : 'No se pudo generar una respuesta';
+      const answer = message.choices[0]?.message?.content || 'No se pudo generar una respuesta';
       
       // Guardar interacción en la base de datos
       await InteractionModel.create({
