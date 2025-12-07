@@ -28,7 +28,7 @@ export interface DocumentChunk {
 }
 
 /**
- * Genera embedding para un texto usando Hugging Face (intfloat/e5-small-v2)
+ * Genera embedding para un texto usando Hugging Face (sentence-transformers/all-MiniLM-L6-v2)
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
@@ -39,7 +39,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     }
     
     const response = await fetch(
-      'https://router.huggingface.co/inference/intfloat/e5-small-v2',
+      'https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2',
       {
         method: 'POST',
         headers: {
@@ -50,11 +50,19 @@ export async function generateEmbedding(text: string): Promise<number[]> {
       }
     );
     
-    const data = await response.json();
+    const responseText = await response.text();
     
     if (!response.ok) {
-      console.error('Error HuggingFace:', data);
-      throw new Error(`Error generando embedding: ${JSON.stringify(data)}`);
+      console.error('HuggingFace error response:', responseText);
+      throw new Error(`HuggingFace API error (${response.status}): ${responseText}`);
+    }
+    
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Failed to parse JSON response:', responseText);
+      throw new Error(`Invalid JSON response: ${responseText}`);
     }
     
     // Verificar que la respuesta es un array de embeddings
