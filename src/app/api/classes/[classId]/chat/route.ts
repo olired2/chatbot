@@ -4,7 +4,8 @@ import { authOptions } from '@/lib/auth';
 import { ClassModel } from '@/models/Class';
 import { InteractionModel } from '@/models/Interaction';
 import connectDB from '@/lib/db/mongodb';
-import { queryDocuments } from '@/lib/ai/embeddings';
+import { searchDocuments } from '@/lib/ai/supabase-embeddings';
+import Groq from 'groq-sdk';
 
 // Marcar como dinámico
 export const dynamic = 'force-dynamic';
@@ -58,39 +59,60 @@ export async function POST(
       });
     }
 
-    // Query documents using embeddings
+    // Query documents using embeddings from Supabase
     try {
-      const results = await queryDocuments(classId, question, classDoc.name);
+      const searchResults = await searchDocuments(classId, question, 5);
+      const context = searchResults.map(r => r.content).join('\n\n');
       
-      if (!results) {
-        throw new Error('No se pudieron procesar los documentos');
-      }
+      const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+      
+      const systemPrompt = `Eres un asistente educativo especializado en la clase: ${classDoc.name}
+      
+Tienes acceso a documentos de la clase. Usa el siguiente contexto para responder preguntas de forma clara, educativa y amigable.
+
+CONTEXTO DE DOCUMENTOS:
+${context || 'No hay documentos disponibles aún.'}
+
+Instrucciones:
+- Si la pregunta está relacionada con el contexto, usa ese información
+- Si no encuentras información en el contexto, di que no encontraste esa información en los documentos
+- Siempre sé educativo y alentador
+- Explica conceptos de forma clara y accesible`;
+
+      const message = await groq.messages.create({
+        model: 'mixtral-8x7b-32768',
+        max_tokens: 1024,
+        messages: [
+          {
+            role: 'user',
+            content: question
+          }
+        ],
+        system: systemPrompt,
+      });
+
+      const answer = message.content[0].type === 'text' ? message.content[0].text : 'No se pudo generar una respuesta';
       
       // Guardar interacción en la base de datos
       await InteractionModel.create({
         usuario_id: session.user.id,
         clase_id: classId,
         pregunta: question,
-        respuesta: results.answer,
-        sources: results.sources?.map((s: { pageContent?: string }) => s.pageContent || '') || [],
+        respuesta: answer,
+        sources: searchResults.map(r => r.documentId) || [],
         fecha: new Date()
       });
       
       // Return formatted response
       return NextResponse.json({ 
         success: true,
-        answer: results.answer, 
-        sources: results.sources 
+        answer, 
+        sources: searchResults 
       });
     } catch (embeddingError) {
-      console.error('Error en embeddings:', embeddingError);
+      console.error('Error en búsqueda de embeddings:', embeddingError);
       
       let errorAnswer = 'Lo siento, hubo un problema al procesar tu pregunta. Esto puede deberse a que los documentos aún están siendo procesados. Por favor, intenta nuevamente en unos momentos.';
-      
-      // Detectar si es un error de rate limit
-      if (embeddingError instanceof Error && embeddingError.message.includes('rate_limit_exceeded')) {
-        errorAnswer = '🚫 **Límite de consultas diario alcanzado**\n\nHemos alcanzado el límite de consultas por hoy. El servicio estará disponible nuevamente mañana.\n\n**Mientras tanto puedes:**\n• Revisar los documentos de clase descargados\n• Consultar tus apuntes\n• Preparar preguntas para mañana\n\n¡Gracias por tu comprensión! 😊';
-      }
       
       // Guardar error también
       await InteractionModel.create({
