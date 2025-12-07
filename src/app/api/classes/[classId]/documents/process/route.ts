@@ -100,8 +100,9 @@ export async function POST(
         try {
           let text = '';
           
-          if (pdfParser.data && pdfParser.data.Pages) {
-            for (const page of pdfParser.data.Pages) {
+          const data = pdfParser.data as any;
+          if (data && data.Pages) {
+            for (const page of data.Pages) {
               if (page.Texts) {
                 for (const textObj of page.Texts) {
                   if (textObj.R && textObj.R[0] && textObj.R[0].T) {
