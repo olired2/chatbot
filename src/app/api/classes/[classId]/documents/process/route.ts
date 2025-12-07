@@ -4,9 +4,15 @@ import { authOptions } from '@/lib/auth';
 import { ClassModel } from '@/models/Class';
 import connectDB from '@/lib/db/mongodb';
 import { generateEmbedding, storeEmbeddings, DocumentChunk } from '@/lib/ai/supabase-embeddings';
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.js';
+import * as pdfjsLib from 'pdfjs-dist';
 
 export const dynamic = 'force-dynamic';
+
+// Set up PDF.js worker
+if (typeof window === 'undefined') {
+  const pdfjsWorker = require('pdfjs-dist/build/pdf.worker');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+}
 
 /**
  * Divide texto en chunks
