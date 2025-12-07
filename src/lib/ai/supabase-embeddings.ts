@@ -45,7 +45,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
       console.log(`⏳ Intento ${attempt}/${maxRetries} generando embedding...`);
       
       const response = await fetch(
-        'https://router.huggingface.co/inference/models/sentence-transformers/all-MiniLM-L6-v2',
+        'https://router.huggingface.co/inference/models/sentence-transformers/all-mpnet-base-v2',
         {
           method: 'POST',
           headers: {
