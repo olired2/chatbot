@@ -32,13 +32,19 @@ export interface DocumentChunk {
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
+    const jinaApiKey = process.env.JINA_API_KEY;
+    
+    if (!jinaApiKey) {
+      throw new Error('JINA_API_KEY no configurada');
+    }
+    
     console.log(`⏳ Generando embedding con Jina AI...`);
     
     const response = await fetch('https://api.jina.ai/v1/embeddings', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer jina_xxx', // Jina es gratis, no requiere autenticación real
+        'Authorization': `Bearer ${jinaApiKey}`,
       },
       body: JSON.stringify({
         model: 'jina-embeddings-v2-base-en',
