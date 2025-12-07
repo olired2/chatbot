@@ -33,11 +33,21 @@ export async function POST(
 ) {
   try {
     const { classId } = await params;
-    const session = await getServerSession(authOptions);
-
-    // Verificar autenticación
-    if (!session || session.user.role !== 'Maestro') {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    
+    // Verificar que es una llamada interna (con token secreto)
+    const authHeader = req.headers.get('authorization');
+    const internalToken = process.env.CRON_SECRET_TOKEN || 'default-secret';
+    
+    // Permitir desde el mismo servidor o con token válido
+    const isInternal = authHeader === `Bearer ${internalToken}`;
+    
+    if (!isInternal) {
+      const session = await getServerSession(authOptions);
+      
+      // Verificar autenticación
+      if (!session || session.user.role !== 'Maestro') {
+        return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+      }
     }
 
     await connectDB();

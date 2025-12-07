@@ -79,12 +79,14 @@ export async function POST(
     // Procesar embeddings automáticamente en background
     console.log(`🔄 Iniciando procesamiento de embeddings para: ${file.name}`);
     try {
+      const internalToken = process.env.CRON_SECRET_TOKEN || 'default-secret';
       const processResponse = await fetch(
         `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/classes/${classId}/documents/process`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${internalToken}`,
           },
           body: JSON.stringify({
             documentId: updatedClass.documents[updatedClass.documents.length - 1]._id,
