@@ -1,16 +1,23 @@
 import { createClient } from '@supabase/supabase-js';
 import Groq from 'groq-sdk';
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const groqApiKey = process.env.GROQ_API_KEY;
+let supabase: any = null;
+let groq: any = null;
 
-if (!supabaseUrl || !supabaseServiceKey || !groqApiKey) {
-  throw new Error('Missing required environment variables for Supabase or Groq');
+function initializeClients() {
+  if (supabase && groq) return;
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const groqApiKey = process.env.GROQ_API_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey || !groqApiKey) {
+    throw new Error('Missing required environment variables: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GROQ_API_KEY');
+  }
+
+  supabase = createClient(supabaseUrl, supabaseServiceKey);
+  groq = new Groq({ apiKey: groqApiKey });
 }
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-const groq = new Groq({ apiKey: groqApiKey });
 
 export interface DocumentChunk {
   classId: string;
@@ -25,6 +32,7 @@ export interface DocumentChunk {
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {
+    initializeClients();
     const response = await groq.embeddings.create({
       model: 'nomic-embed-text-v1.5',
       input: text,
@@ -43,6 +51,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
  */
 export async function storeEmbeddings(chunks: DocumentChunk[]): Promise<void> {
   try {
+    initializeClients();
     const { error } = await supabase
       .from('document_embeddings')
       .insert(
@@ -81,6 +90,7 @@ export async function searchDocuments(
   }>
 > {
   try {
+    initializeClients();
     // Generar embedding de la query
     const queryEmbedding = await generateEmbedding(query);
 
@@ -114,6 +124,7 @@ export async function deleteDocumentEmbeddings(
   documentId: string
 ): Promise<void> {
   try {
+    initializeClients();
     const { error } = await supabase
       .from('document_embeddings')
       .delete()
