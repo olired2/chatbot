@@ -4,13 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { ClassModel } from '@/models/Class';
 import connectDB from '@/lib/db/mongodb';
 import { generateEmbedding, storeEmbeddings, DocumentChunk } from '@/lib/ai/supabase-embeddings';
-import * as pdfjsLib from 'pdfjs-dist';
-
-// Marcar como dinámico
-export const dynamic = 'force-dynamic';
-
-// Configurar worker para pdf.js
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+import pdfParse from 'pdf-parse';
 
 /**
  * Divide texto en chunks
@@ -77,20 +71,11 @@ export async function POST(
       throw new Error(`Error descargando PDF: ${pdfResponse.statusText}`);
     }
 
-    const pdfBuffer = await pdfResponse.arrayBuffer();
+    const pdfBuffer = Buffer.from(await pdfResponse.arrayBuffer());
 
-    // Parsear el PDF
-    const pdf = await pdfjsLib.getDocument({ data: pdfBuffer }).promise;
-    let fullText = '';
-
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items
-        .map((item: any) => (item.str ? item.str : ''))
-        .join(' ');
-      fullText += pageText + '\n';
-    }
+    // Parsear el PDF con pdf-parse
+    const pdfData = await pdfParse(pdfBuffer);
+    const fullText = pdfData.text;
 
     if (fullText.trim().length === 0) {
       return NextResponse.json(
