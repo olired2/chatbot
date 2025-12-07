@@ -528,8 +528,11 @@ export async function processPDFDocument(filePath: string, classId: string) {
   try {
     console.log(`📄 Procesando PDF: ${filePath}`);
     
-    // Verificar que el archivo existe
-    await fs.access(filePath);
+    // Verificar que el archivo existe usando fetch HEAD
+    const headResponse = await fetch(filePath, { method: 'HEAD' });
+    if (!headResponse.ok) {
+      throw new Error(`El archivo no existe o no es accesible: ${headResponse.statusText}`);
+    }
     
     // @ts-ignore - pdf2json no tiene tipos oficiales
     const PDFParser = (await import('pdf2json')).default;
