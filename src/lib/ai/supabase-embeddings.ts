@@ -30,7 +30,8 @@ export async function generateEmbedding(text: string): Promise<number[]> {
       input: text,
     });
 
-    return response.data[0].embedding;
+    const embedding = response.data[0].embedding;
+    return Array.isArray(embedding) ? embedding : JSON.parse(embedding as string);
   } catch (error) {
     console.error('Error generando embedding:', error);
     throw error;
