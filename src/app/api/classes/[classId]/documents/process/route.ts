@@ -84,21 +84,12 @@ export async function POST(
     }
 
     const pdfArrayBuffer = await pdfResponse.arrayBuffer();
-    const pdfData = new Uint8Array(pdfArrayBuffer);
+    const pdfBuffer = Buffer.from(pdfArrayBuffer);
 
-    // Parsear el PDF dinámicamente con pdfjs
-    const pdfjsLib = await import('pdfjs-dist');
-    const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
-    let fullText = '';
-
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items
-        .map((item: any) => (item.str ? item.str : ''))
-        .join(' ');
-      fullText += pageText + '\n';
-    }
+    // Parsear el PDF con pdf-parse
+    const pdfParse = await import('pdf-parse/lib/pdf-parse.js');
+    const pdf = await pdfParse.default(pdfBuffer);
+    const fullText = pdf.text;
 
     if (fullText.trim().length === 0) {
       return NextResponse.json(
