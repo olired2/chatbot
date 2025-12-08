@@ -80,8 +80,15 @@ export async function POST(
     console.log(`🔄 Iniciando procesamiento de embeddings para: ${file.name}`);
     try {
       const internalToken = process.env.CRON_SECRET_TOKEN || 'default-secret';
+      
+      // Construir URL base desde el request actual
+      const url = new URL(req.url);
+      const baseUrl = `${url.protocol}//${url.host}`;
+      
+      console.log(`📡 Llamando a: ${baseUrl}/api/classes/${classId}/documents/process`);
+      
       const processResponse = await fetch(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/classes/${classId}/documents/process`,
+        `${baseUrl}/api/classes/${classId}/documents/process`,
         {
           method: 'POST',
           headers: {
