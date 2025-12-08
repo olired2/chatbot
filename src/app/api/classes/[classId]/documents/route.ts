@@ -76,41 +76,39 @@ export async function POST(
       { new: true }
     );
 
-    // Procesar embeddings automáticamente en background
+    // Procesar embeddings automáticamente en background (sin esperar respuesta)
     console.log(`🔄 Iniciando procesamiento de embeddings para: ${file.name}`);
-    try {
-      const internalToken = process.env.CRON_SECRET_TOKEN || 'default-secret';
-      
-      // Construir URL base desde el request actual
-      const url = new URL(req.url);
-      const baseUrl = `${url.protocol}//${url.host}`;
-      
-      console.log(`📡 Llamando a: ${baseUrl}/api/classes/${classId}/documents/process`);
-      
-      const processResponse = await fetch(
-        `${baseUrl}/api/classes/${classId}/documents/process`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${internalToken}`,
-          },
-          body: JSON.stringify({
-            documentId: updatedClass.documents[updatedClass.documents.length - 1]._id,
-            documentUrl: blob.url,
-          }),
-        }
-      );
-
-      if (processResponse.ok) {
+    
+    // Ejecutar en background sin bloquear la respuesta
+    const internalToken = process.env.CRON_SECRET_TOKEN || 'default-secret';
+    const url = new URL(req.url);
+    const baseUrl = `${url.protocol}//${url.host}`;
+    const processUrl = `${baseUrl}/api/classes/${classId}/documents/process`;
+    
+    console.log(`📡 Llamando a: ${processUrl}`);
+    
+    // Iniciar el procesamiento sin esperar (fire and forget)
+    fetch(processUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${internalToken}`,
+      },
+      body: JSON.stringify({
+        documentId: updatedClass.documents[updatedClass.documents.length - 1]._id,
+        documentUrl: blob.url,
+      }),
+    }).then(response => {
+      if (response.ok) {
         console.log('✅ Procesamiento iniciado exitosamente');
       } else {
-        console.error('⚠️ Error iniciando procesamiento:', await processResponse.text());
+        response.text().then(text => {
+          console.error('⚠️ Error iniciando procesamiento:', text);
+        });
       }
-    } catch (processError) {
-      console.error('⚠️ Error en procesamiento background:', processError);
-      // No fallar la subida si falla el procesamiento
-    }
+    }).catch(error => {
+      console.error('⚠️ Error en procesamiento background:', error);
+    });
 
     return NextResponse.json({
       success: true,
