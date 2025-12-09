@@ -24,10 +24,10 @@ export async function sendVerificationEmail(
   token: string
 ): Promise<boolean> {
   try {
-    // Usar VERCEL_URL en producción, o NEXTAUTH_URL en desarrollo
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
-      : (process.env.NEXTAUTH_URL || 'http://localhost:3000');
+    // URL de producción o desarrollo
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://chatbot-plum-eta-53.vercel.app' 
+      : 'http://localhost:3000';
     
     const verificationUrl = `${baseUrl}/auth/verify-email?token=${token}`;
     
