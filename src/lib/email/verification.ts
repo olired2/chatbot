@@ -24,7 +24,12 @@ export async function sendVerificationEmail(
   token: string
 ): Promise<boolean> {
   try {
-    const verificationUrl = `${process.env.NEXTAUTH_URL}/auth/verify-email?token=${token}`;
+    // Usar VERCEL_URL en producción, o NEXTAUTH_URL en desarrollo
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}` 
+      : (process.env.NEXTAUTH_URL || 'http://localhost:3000');
+    
+    const verificationUrl = `${baseUrl}/auth/verify-email?token=${token}`;
     
     const mailOptions = {
       from: `"MentorBot" <${process.env.SMTP_USER}>`,

@@ -41,8 +41,13 @@ export async function POST(req: Request) {
     user.passwordResetExpiry = resetTokenExpiry;
     await user.save();
 
+    // Usar VERCEL_URL en producción, o NEXTAUTH_URL en desarrollo
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}` 
+      : (process.env.NEXTAUTH_URL || 'http://localhost:3000');
+
     // Enviar email de recuperación
-    const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${resetToken}`;
+    const resetUrl = `${baseUrl}/auth/reset-password?token=${resetToken}`;
     
     try {
       await sendPasswordResetEmail(user.email, user.name, resetUrl);
