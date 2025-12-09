@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -157,13 +158,19 @@ export default function SingleClassChatbot({ classId }: SingleClassChatbotProps)
             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+              className={`max-w-xs lg:max-w-md xl:max-w-2xl px-4 py-2 rounded-lg ${
                 message.role === 'user'
                   ? 'bg-indigo-600 text-white'
                   : 'bg-gray-100 text-gray-900 border'
               }`}
             >
-              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              {message.role === 'user' ? (
+                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              ) : (
+                <div className="text-sm prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5 prose-headings:my-2">
+                  <ReactMarkdown>{message.content}</ReactMarkdown>
+                </div>
+              )}
               <p className={`text-xs mt-1 ${
                 message.role === 'user' ? 'text-indigo-200' : 'text-gray-500'
               }`}>
