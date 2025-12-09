@@ -67,7 +67,7 @@ export async function POST(
               documents: {
                 name: fileName.replace(/^\d+_/, ''), // Quitar timestamp del nombre
                 path: blob.url,
-                size: blob.size,
+                size: 0, // El tamaño se obtendrá después si es necesario
                 uploadedAt: new Date(),
                 embeddings: false,
                 processed: false
