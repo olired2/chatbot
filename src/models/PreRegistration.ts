@@ -34,16 +34,19 @@ const preRegistrationSchema = new mongoose.Schema({
   expiresAt: {
     type: Date,
     required: true,
-    default: Date.now,
-    expires: 0 // Los documentos expirarán basándose en este campo
+    default: () => new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 horas desde ahora
+    index: { expires: 0 } // MongoDB eliminará automáticamente cuando expire
   },
   createdAt: {
     type: Date,
     default: Date.now
   }
 }, {
-  timestamps: false // Desactivamos timestamps automáticos ya que manejamos createdAt manualmente
+  timestamps: false
 });
+
+// Índice TTL para eliminación automática
+preRegistrationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export const PreRegistrationModel = mongoose.models.PreRegistration || 
   mongoose.model('PreRegistration', preRegistrationSchema);
