@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { upload } from '@vercel/blob/client';
 
 interface UploadDocumentProps {
   classId: string;
@@ -11,6 +12,7 @@ interface UploadDocumentProps {
 export default function UploadDocument({ classId, onUploadSuccess }: UploadDocumentProps) {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
@@ -24,9 +26,16 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
         setFile(null);
         return;
       }
+      // Validar tamaño máximo (50MB)
+      if (selectedFile.size > 50 * 1024 * 1024) {
+        setError('El archivo es demasiado grande. Máximo 50MB.');
+        setFile(null);
+        return;
+      }
       setFile(selectedFile);
       setError('');
       setMessage('');
+      setProgress(0);
     }
   };
 
@@ -39,23 +48,20 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
     setUploading(true);
     setError('');
     setMessage('');
+    setProgress(0);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await fetch(`/api/classes/${classId}/documents`, {
-        method: 'POST',
-        body: formData,
+      // Upload directo a Vercel Blob (soporta archivos grandes)
+      const fileName = `${Date.now()}_${file.name}`;
+      
+      const blob = await upload(fileName, file, {
+        access: 'public',
+        handleUploadUrl: `/api/classes/${classId}/documents/upload-token`,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al subir el archivo');
-      }
-
-      setMessage('Documento subido exitosamente');
+      console.log('Archivo subido:', blob.url);
+      setProgress(100);
+      setMessage('Documento subido exitosamente. Procesando...');
       setFile(null);
       
       // Reset file input
@@ -70,6 +76,7 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
         onUploadSuccess();
       }
     } catch (err) {
+      console.error('Error uploading:', err);
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
       setError(errorMessage);
     } finally {
@@ -111,8 +118,17 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
           disabled={!file || uploading}
           className="w-full bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
-          {uploading ? 'Subiendo...' : 'Subir Documento'}
+          {uploading ? `Subiendo... ${progress}%` : 'Subir Documento'}
         </button>
+
+        {uploading && (
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        )}
 
         {message && (
           <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded">
@@ -127,7 +143,7 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
         )}
 
         <div className="text-xs text-gray-500">
-          <p>• Solo se permiten archivos PDF</p>
+          <p>• Solo se permiten archivos PDF (máximo 50MB)</p>
           <p>• Los documentos serán procesados automáticamente para el chatbot</p>
           <p>• Los alumnos podrán hacer preguntas sobre el contenido</p>
         </div>
