@@ -135,32 +135,39 @@ export async function POST(
     const chunks = splitTextIntoChunks(fullText, 500, 100);
     console.log(`✂️ Documento dividido en ${chunks.length} fragmentos`);
 
-    // Generar embeddings para cada chunk
-    const embeddingChunks: DocumentChunk[] = [];
+    // Generar embeddings en lotes para evitar timeout
+    const BATCH_SIZE = 10; // Procesar 10 chunks a la vez
+    let totalProcessed = 0;
 
-    for (let i = 0; i < chunks.length; i++) {
-      console.log(`⏳ Generando embedding ${i + 1}/${chunks.length}...`);
+    for (let batchStart = 0; batchStart < chunks.length; batchStart += BATCH_SIZE) {
+      const batchEnd = Math.min(batchStart + BATCH_SIZE, chunks.length);
+      const batchChunks = chunks.slice(batchStart, batchEnd);
+      
+      console.log(`⏳ Procesando lote ${Math.floor(batchStart/BATCH_SIZE) + 1}/${Math.ceil(chunks.length/BATCH_SIZE)} (chunks ${batchStart + 1}-${batchEnd})...`);
 
-      const embedding = await generateEmbedding(chunks[i]);
+      // Generar embeddings para este lote
+      const embeddingChunks: DocumentChunk[] = [];
+      
+      for (let i = 0; i < batchChunks.length; i++) {
+        const globalIndex = batchStart + i;
+        const embedding = await generateEmbedding(batchChunks[i]);
 
-      embeddingChunks.push({
-        classId,
-        documentId,
-        chunkIndex: i,
-        content: chunks[i],
-        embedding,
-      });
-
-      // Pequeño delay para evitar rate limiting
-      if (i < chunks.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        embeddingChunks.push({
+          classId,
+          documentId,
+          chunkIndex: globalIndex,
+          content: batchChunks[i],
+          embedding,
+        });
       }
+
+      // Guardar este lote inmediatamente en Supabase
+      await storeEmbeddings(embeddingChunks);
+      totalProcessed += embeddingChunks.length;
+      console.log(`✅ Lote guardado. Total: ${totalProcessed}/${chunks.length} embeddings`);
     }
 
-    // Almacenar en Supabase
-    console.log(`💾 Guardando ${embeddingChunks.length} embeddings en Supabase...`);
-    await storeEmbeddings(embeddingChunks);
-    console.log(`✅ Embeddings guardados exitosamente en Supabase`);
+    console.log(`✅ Todos los ${totalProcessed} embeddings guardados en Supabase`);
 
     // Actualizar documento en MongoDB para marcar como procesado
     console.log(`📝 Actualizando documento en MongoDB...`);
