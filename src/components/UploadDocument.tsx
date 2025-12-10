@@ -26,9 +26,9 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
         setFile(null);
         return;
       }
-      // Validar tamaño máximo (50MB)
-      if (selectedFile.size > 50 * 1024 * 1024) {
-        setError('El archivo es demasiado grande. Máximo 50MB.');
+      // Validar tamaño máximo (100MB)
+      if (selectedFile.size > 100 * 1024 * 1024) {
+        setError('El archivo es demasiado grande. Máximo 100MB.');
         setFile(null);
         return;
       }
@@ -54,31 +54,59 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
       // Upload directo a Vercel Blob (soporta archivos grandes)
       const fileName = `${Date.now()}_${file.name}`;
       
+      setProgress(10);
+      setMessage('Iniciando subida...');
+      
       const blob = await upload(fileName, file, {
         access: 'public',
         handleUploadUrl: `/api/classes/${classId}/documents/upload-token`,
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setProgress(percentCompleted);
+          setMessage(`Subiendo archivo... ${percentCompleted}%`);
+        },
       });
 
       console.log('Archivo subido:', blob.url);
       setProgress(100);
-      setMessage('Documento subido exitosamente. Procesando...');
+      setMessage('✅ Documento subido exitosamente. Procesando...');
       setFile(null);
       
       // Reset file input
       const fileInput = document.getElementById('file-upload') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
 
-      // Refrescar la página para mostrar el nuevo documento
-      router.refresh();
-
-      // Llamar callback si existe
-      if (onUploadSuccess) {
-        onUploadSuccess();
-      }
+      // Esperar 2 segundos para que el usuario vea el mensaje
+      setTimeout(() => {
+        router.refresh();
+        if (onUploadSuccess) {
+          onUploadSuccess();
+        }
+      }, 2000);
     } catch (err) {
       console.error('Error uploading:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+      let errorMessage = 'Error desconocido al subir el archivo';
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+      
+      // Mensajes más específicos
+      if (errorMessage.includes('JSON')) {
+        errorMessage = '❌ Error de comunicación con el servidor. Por favor intenta de nuevo.';
+      } else if (errorMessage.includes('size') || errorMessage.includes('large')) {
+        errorMessage = '❌ El archivo es demasiado grande. Máximo 100MB permitidos.';
+      } else if (errorMessage.includes('PDF') || errorMessage.includes('pdf')) {
+        errorMessage = '❌ Solo se permiten archivos PDF.';
+      } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        errorMessage = '❌ Error de conexión. Verifica tu internet e intenta de nuevo.';
+      }
+      
       setError(errorMessage);
+      setProgress(0);
+      setMessage('');
     } finally {
       setUploading(false);
     }
@@ -143,7 +171,7 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
         )}
 
         <div className="text-xs text-gray-500">
-          <p>• Solo se permiten archivos PDF (máximo 50MB)</p>
+          <p>• Solo se permiten archivos PDF (máximo 100MB)</p>
           <p>• Los documentos serán procesados automáticamente para el chatbot</p>
           <p>• Los alumnos podrán hacer preguntas sobre el contenido</p>
         </div>
