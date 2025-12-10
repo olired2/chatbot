@@ -67,29 +67,47 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
         },
       });
 
-      console.log('Archivo subido:', blob.url);
+      console.log('Archivo subido a Blob:', blob.url);
+      setProgress(90);
+      setMessage('📝 Registrando documento...');
+
+      // Registrar el documento en MongoDB
+      const registerResponse = await fetch(`/api/classes/${classId}/documents/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          blobUrl: blob.url,
+          fileName: file.name,
+          fileSize: file.size,
+        }),
+      });
+
+      const registerData = await registerResponse.json();
+
+      if (!registerResponse.ok) {
+        throw new Error(registerData.error || 'Error al registrar documento');
+      }
+
+      console.log('Documento registrado:', registerData);
       setProgress(100);
-      setMessage('✅ Documento subido exitosamente. Refrescando lista...');
+      setMessage('✅ Documento subido y registrado exitosamente!');
       setFile(null);
       
       // Reset file input
       const fileInput = document.getElementById('file-upload') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
 
-      // Esperar 2 segundos y refrescar inmediatamente
+      // Refrescar inmediatamente
       setTimeout(() => {
-        setMessage('🔄 Actualizando lista de documentos...');
         router.refresh();
-        
-        // Después de 1 segundo más, llamar callback
-        setTimeout(() => {
-          if (onUploadSuccess) {
-            onUploadSuccess();
-          }
-          setMessage('');
-          setProgress(0);
-        }, 1000);
-      }, 2000);
+        if (onUploadSuccess) {
+          onUploadSuccess();
+        }
+        setMessage('');
+        setProgress(0);
+      }, 1500);
     } catch (err) {
       console.error('Error uploading:', err);
       let errorMessage = 'Error desconocido al subir el archivo';
