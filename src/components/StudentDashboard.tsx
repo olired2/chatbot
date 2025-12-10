@@ -82,7 +82,7 @@ export default function StudentDashboard() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">🎓 Mis Clases</h1>
-            <p className="text-gray-600 mt-1">Accede a tus clases y chatea con los mentores de IA</p>
+            <p className="text-gray-600 mt-1">Accede a tus clases y conversa con MentorBot</p>
           </div>
           <button
             onClick={() => setIsJoinModalOpen(true)}
@@ -97,7 +97,7 @@ export default function StudentDashboard() {
             <div className="text-6xl mb-4">🎒</div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">No estás inscrito en ninguna clase</h3>
             <p className="text-gray-600 mb-6 max-w-sm mx-auto">
-              Únete a una clase usando el código que te proporcionó tu profesor para comenzar a interactuar con el mentor de IA
+              Únete a una clase usando el código que te proporcionó tu profesor para comenzar a conversar con MentorBot
             </p>
             <button
               onClick={() => setIsJoinModalOpen(true)}

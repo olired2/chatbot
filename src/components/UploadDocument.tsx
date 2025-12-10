@@ -172,8 +172,8 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
 
         <div className="text-xs text-gray-500">
           <p>• Solo se permiten archivos PDF (máximo 100MB)</p>
-          <p>• Los documentos serán procesados automáticamente para el chatbot</p>
-          <p>• Los alumnos podrán hacer preguntas sobre el contenido</p>
+          <p>• Los documentos serán procesados automáticamente para MentorBot</p>
+          <p>• Los alumnos podrán conversar con MentorBot sobre el contenido</p>
         </div>
       </div>
     </div>

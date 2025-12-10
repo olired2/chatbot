@@ -105,7 +105,7 @@ export default function ClassesClient({ initialClasses }: ClassesClientProps) {
             <div className="text-6xl mb-4">📚</div>
             <h3 className="text-xl font-bold text-gray-900 text-visible mb-2">No tienes clases creadas</h3>
             <p className="text-gray-600 text-secondary mb-6 max-w-sm mx-auto">
-              Crea tu primera clase para comenzar a interactuar con estudiantes y el chatbot mentor
+              Crea tu primera clase para comenzar a interactuar con estudiantes y MentorBot
             </p>
             <button
               onClick={() => setIsModalOpen(true)}

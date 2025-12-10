@@ -129,8 +129,8 @@ export default function SingleClassChatbot({ classId }: SingleClassChatbotProps)
             <span className="text-xl">🤖</span>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">Mentor de IA</h3>
-            <p className="text-sm text-gray-600">Pregúntame sobre el material de la clase</p>
+            <h3 className="font-semibold text-gray-900">MentorBot</h3>
+            <p className="text-sm text-gray-600">Dale una instrucción a MentorBot sobre el material de la clase</p>
           </div>
         </div>
       </div>
@@ -147,8 +147,8 @@ export default function SingleClassChatbot({ classId }: SingleClassChatbotProps)
         {messages.length === 0 && !loadingHistory && (
           <div className="text-center py-8 text-gray-500">
             <div className="text-4xl mb-4">💬</div>
-            <p className="text-lg font-medium mb-2">¡Hola! Soy tu mentor de IA</p>
-            <p className="text-sm">Pregúntame cualquier cosa sobre el material de esta clase.</p>
+            <p className="text-lg font-medium mb-2">¡Hola! Soy MentorBot</p>
+            <p className="text-sm">Dale una instrucción sobre el material de esta clase.</p>
           </div>
         )}
 
@@ -209,7 +209,7 @@ export default function SingleClassChatbot({ classId }: SingleClassChatbotProps)
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Escribe tu pregunta aquí..."
+            placeholder="Dale una instrucción a MentorBot..."
             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             disabled={loading}
           />

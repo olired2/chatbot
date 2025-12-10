@@ -64,7 +64,7 @@ export async function sendVerificationEmail(
               <h2 style="color: #1f2937; margin-top: 0;">Hola ${nombre},</h2>
               
               <p style="color: #4b5563; line-height: 1.6;">
-                ¡Gracias por registrarte en MentorBot! Para completar tu registro y comenzar a usar nuestro chatbot educativo, necesitas verificar tu dirección de correo electrónico.
+                ¡Gracias por registrarte en MentorBot! Para completar tu registro y comenzar a conversar con MentorBot, necesitas verificar tu dirección de correo electrónico.
               </p>
               
               <p style="color: #4b5563; line-height: 1.6;">

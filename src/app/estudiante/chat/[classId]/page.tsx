@@ -48,15 +48,15 @@ export default async function ChatPage({ params }: ChatPageProps) {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{classData.name}</h1>
-            <p className="text-gray-600">Mentor de IA especializado en esta clase</p>
+            <p className="text-gray-600">Conversa con MentorBot especializado en esta clase</p>
           </div>
         </div>
         
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="font-semibold text-blue-900 mb-2">💡 Consejos para chatear:</h3>
+          <h3 className="font-semibold text-blue-900 mb-2">💡 Consejos para conversar con MentorBot:</h3>
           <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Haz preguntas específicas sobre el material de la clase</li>
-            <li>• El mentor conoce todos los documentos subidos por tu profesor</li>
+            <li>• Dale instrucciones específicas sobre el material de la clase</li>
+            <li>• MentorBot conoce todos los documentos subidos por tu profesor</li>
             <li>• Puedes pedir explicaciones, ejemplos o ejercicios</li>
             <li>• También puedes solicitar motivación o consejos de estudio</li>
           </ul>

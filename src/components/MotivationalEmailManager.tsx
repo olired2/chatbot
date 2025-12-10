@@ -87,7 +87,7 @@ export default function MotivationalEmailManager() {
     <div className="bg-white p-6 rounded-lg shadow-lg">
       <h3 className="text-xl font-bold mb-4">📧 Correos Motivacionales Automáticos</h3>
       <p className="text-gray-600 mb-6">
-        Sistema que envía correos automáticos a estudiantes que no han interactuado con el chatbot por 15 días o más.
+        Sistema que envía correos automáticos a estudiantes que no han interactuado con MentorBot por 15 días o más.
       </p>
 
       {/* Controles principales */}
@@ -219,7 +219,7 @@ export default function MotivationalEmailManager() {
           <li>• El sistema verifica automáticamente la inactividad de estudiantes</li>
           <li>• Se envía un correo motivacional después de 15 días sin interacción</li>
           <li>• No se envían correos duplicados en un período de 7 días</li>
-          <li>• Los correos incluyen enlaces directos al chatbot y consejos personalizados</li>
+          <li>• Los correos incluyen enlaces directos a MentorBot y consejos personalizados</li>
           <li>• Puedes ejecutar el proceso manualmente o programarlo para ejecución automática</li>
         </ul>
       </div>

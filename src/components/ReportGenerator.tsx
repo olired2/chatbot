@@ -76,7 +76,7 @@ export default function ReportGenerator({ classId, className }: ReportGeneratorP
       
       // Título
       pdf.setFontSize(20);
-      pdf.text('Reporte de Actividad del Chatbot', 20, yPosition);
+      pdf.text('Reporte de Actividad de MentorBot', 20, yPosition);
       yPosition += 20;
       
       // Información de la clase
@@ -135,7 +135,7 @@ export default function ReportGenerator({ classId, className }: ReportGeneratorP
       });
       
       // Guardar PDF
-      pdf.save(`reporte-chatbot-${className}-${new Date().toISOString().split('T')[0]}.pdf`);
+      pdf.save(`reporte-mentorbot-${className}-${new Date().toISOString().split('T')[0]}.pdf`);
       
     } catch (error) {
       console.error('Error generando PDF:', error);
@@ -159,7 +159,7 @@ export default function ReportGenerator({ classId, className }: ReportGeneratorP
       
       // Título
       pdf.setFontSize(20);
-      pdf.text('Reporte Detallado - Chatbot Educativo', 20, yPosition);
+      pdf.text('Reporte Detallado - MentorBot', 20, yPosition);
       yPosition += 20;
       
       // Información de la clase
@@ -180,7 +180,7 @@ export default function ReportGenerator({ classId, className }: ReportGeneratorP
       
       pdf.setFontSize(11);
       const resumen = [
-        `Este reporte analiza la actividad del chatbot educativo durante el período registrado.`,
+        `Este reporte analiza la actividad de MentorBot durante el período registrado.`,
         `Se han procesado ${stats.totalInteractions} interacciones de ${stats.uniqueUsers} usuarios únicos.`,
         `El promedio de interacciones por día es de ${stats.averagePerDay}.`,
         `La plataforma muestra un ${stats.totalInteractions > 50 ? 'alto' : 'moderado'} nivel de engagement estudiantil.`
@@ -283,7 +283,7 @@ export default function ReportGenerator({ classId, className }: ReportGeneratorP
     <div className="bg-white p-6 rounded-lg shadow-lg">
       <h3 className="text-xl font-bold mb-4">📊 Generador de Reportes</h3>
       <p className="text-gray-600 mb-6">
-        Genera reportes en PDF con las estadísticas y actividad del chatbot.
+        Genera reportes en PDF con las estadísticas y actividad de MentorBot.
       </p>
       
       <div className="grid md:grid-cols-2 gap-4">
