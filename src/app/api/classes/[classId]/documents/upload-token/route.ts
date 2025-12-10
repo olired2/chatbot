@@ -63,65 +63,80 @@ export async function POST(
         };
       },
       onUploadCompleted: async ({ blob, tokenPayload }) => {
-        // Guardar referencia en la base de datos
-        const payload = JSON.parse(tokenPayload || '{}');
-        
-        console.log(`✅ Archivo subido a Blob: ${blob.url}`);
-        
-        // Extraer nombre del archivo desde la URL
-        const fileName = blob.pathname.split('/').pop() || 'documento.pdf';
-        
-        const updatedClass = await ClassModel.findByIdAndUpdate(
-          payload.classId,
-          {
-            $push: {
-              documents: {
-                name: fileName.replace(/^\d+_/, ''), // Quitar timestamp del nombre
-                path: blob.url,
-                size: 0, // El tamaño se obtendrá después si es necesario
-                uploadedAt: new Date(),
-                embeddings: false,
-                processed: false
+        try {
+          // Asegurar conexión a DB
+          await connectDB();
+          
+          // Guardar referencia en la base de datos
+          const payload = JSON.parse(tokenPayload || '{}');
+          
+          console.log(`✅ Archivo subido a Blob: ${blob.url}`);
+          
+          // Extraer nombre del archivo desde la URL
+          const fileName = blob.pathname.split('/').pop() || 'documento.pdf';
+          const cleanFileName = fileName.replace(/^\d+_/, ''); // Quitar timestamp del nombre
+          
+          console.log(`📝 Guardando documento en MongoDB: ${cleanFileName}`);
+          
+          const updatedClass = await ClassModel.findByIdAndUpdate(
+            payload.classId,
+            {
+              $push: {
+                documents: {
+                  name: cleanFileName,
+                  path: blob.url,
+                  size: blob.size || 0,
+                  uploadedAt: new Date(),
+                  embeddings: false,
+                  processed: false
+                }
               }
-            }
-          },
-          { new: true }
-        );
-        
-        console.log(`📝 Documento registrado en clase ${payload.classId}`);
-        
-        // Iniciar procesamiento en background
-        const lastDocument = updatedClass.documents[updatedClass.documents.length - 1];
-        const internalToken = process.env.CRON_SECRET_TOKEN || 'default-secret';
-        
-        // Obtener la URL base del request actual
-        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-        const processUrl = `${baseUrl}/api/classes/${payload.classId}/documents/process`;
-        
-        console.log(`🔄 Iniciando procesamiento automático: ${processUrl}`);
-        
-        // Fire and forget - no esperamos la respuesta
-        fetch(processUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${internalToken}`,
-          },
-          body: JSON.stringify({
-            documentId: lastDocument._id.toString(),
-            documentUrl: blob.url,
-          }),
-        }).then(response => {
-          if (response.ok) {
-            console.log('✅ Procesamiento iniciado exitosamente');
-          } else {
-            response.text().then(text => {
-              console.error('⚠️ Error iniciando procesamiento:', text);
-            });
+            },
+            { new: true }
+          );
+          
+          if (!updatedClass) {
+            console.error('❌ No se pudo actualizar la clase');
+            return;
           }
-        }).catch(error => {
-          console.error('⚠️ Error en procesamiento background:', error);
-        });
+          
+          console.log(`✅ Documento registrado en clase ${payload.classId}`);
+          
+          // Iniciar procesamiento en background
+          const lastDocument = updatedClass.documents[updatedClass.documents.length - 1];
+          const internalToken = process.env.CRON_SECRET_TOKEN || 'default-secret';
+          
+          // Obtener la URL base del request actual
+          const baseUrl = process.env.NEXTAUTH_URL || 'https://chatbot-plum-eta-53.vercel.app';
+          const processUrl = `${baseUrl}/api/classes/${payload.classId}/documents/process`;
+          
+          console.log(`🔄 Iniciando procesamiento automático: ${processUrl}`);
+          
+          // Fire and forget - no esperamos la respuesta
+          fetch(processUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${internalToken}`,
+            },
+            body: JSON.stringify({
+              documentId: lastDocument._id.toString(),
+              documentUrl: blob.url,
+            }),
+          }).then(response => {
+            if (response.ok) {
+              console.log('✅ Procesamiento iniciado exitosamente');
+            } else {
+              response.text().then(text => {
+                console.error('⚠️ Error iniciando procesamiento:', text);
+              });
+            }
+          }).catch(error => {
+            console.error('⚠️ Error en procesamiento background:', error);
+          });
+        } catch (error) {
+          console.error('❌ Error en onUploadCompleted:', error);
+        }
       },
     });
 
