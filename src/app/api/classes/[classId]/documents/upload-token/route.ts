@@ -85,7 +85,7 @@ export async function POST(
                 documents: {
                   name: cleanFileName,
                   path: blob.url,
-                  size: blob.size || 0,
+                  size: 0,
                   uploadedAt: new Date(),
                   embeddings: false,
                   processed: false
