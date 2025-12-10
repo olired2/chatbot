@@ -86,10 +86,11 @@ export async function POST(
 
     // Iniciar procesamiento en background
     const internalToken = process.env.CRON_SECRET_TOKEN || 'default-secret';
-    const baseUrl = process.env.NEXTAUTH_URL || 'https://chatbot-plum-eta-53.vercel.app';
+    // Usar URL de producción fija para evitar problemas con localhost
+    const baseUrl = 'https://chatbot-plum-eta-53.vercel.app';
     const processUrl = `${baseUrl}/api/classes/${classId}/documents/process`;
 
-    console.log(`🔄 Iniciando procesamiento automático...`);
+    console.log(`🔄 Iniciando procesamiento automático: ${processUrl}`);
 
     // Fire and forget - no esperamos la respuesta
     fetch(processUrl, {

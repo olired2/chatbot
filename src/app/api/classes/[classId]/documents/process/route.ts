@@ -106,7 +106,13 @@ export async function POST(
               if (page.Texts) {
                 for (const textObj of page.Texts) {
                   if (textObj.R && textObj.R[0] && textObj.R[0].T) {
-                    text += decodeURIComponent(textObj.R[0].T) + ' ';
+                    try {
+                      // Intentar decodificar, si falla usar el texto tal cual
+                      text += decodeURIComponent(textObj.R[0].T) + ' ';
+                    } catch (decodeError) {
+                      // Si falla el decode, usar el texto sin decodificar
+                      text += textObj.R[0].T.replace(/%20/g, ' ').replace(/%[0-9A-Fa-f]{2}/g, '') + ' ';
+                    }
                   }
                 }
               }
