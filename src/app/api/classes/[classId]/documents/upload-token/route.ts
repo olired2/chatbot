@@ -31,7 +31,18 @@ export async function POST(
       return NextResponse.json({ error: 'No tienes permiso para modificar esta clase' }, { status: 403 });
     }
 
-    const body = await req.json() as HandleUploadBody;
+    // Parsear el body con manejo de errores
+    let body: HandleUploadBody;
+    try {
+      const text = await req.text();
+      body = JSON.parse(text) as HandleUploadBody;
+    } catch (parseError) {
+      console.error('Error parseando request body:', parseError);
+      return NextResponse.json(
+        { error: 'Request body inválido' },
+        { status: 400 }
+      );
+    }
 
     const jsonResponse = await handleUpload({
       body,
@@ -44,7 +55,7 @@ export async function POST(
         
         return {
           allowedContentTypes: ['application/pdf'],
-          maximumSizeInBytes: 50 * 1024 * 1024, // 50MB máximo
+          maximumSizeInBytes: 100 * 1024 * 1024, // 100MB máximo
           tokenPayload: JSON.stringify({
             classId,
             userId: session.user.id,
