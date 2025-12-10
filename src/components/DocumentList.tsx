@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface Document {
@@ -8,6 +8,7 @@ interface Document {
   uploadedAt: string;
   size?: number;
   embeddings?: boolean;
+  processed?: boolean;
   path: string;
   _id?: string;
 }
@@ -21,6 +22,20 @@ export default function DocumentList({ classId, documents }: DocumentListProps) 
   const [deleting, setDeleting] = useState<string | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
   const router = useRouter();
+
+  // Auto-refresh cada 5 segundos si hay documentos pendientes
+  useEffect(() => {
+    const hasPendingDocs = documents.some(doc => !doc.embeddings && !doc.processed);
+    
+    if (hasPendingDocs) {
+      const interval = setInterval(() => {
+        console.log('🔄 Refrescando estado de documentos...');
+        router.refresh();
+      }, 5000); // Cada 5 segundos
+
+      return () => clearInterval(interval);
+    }
+  }, [documents, router]);
 
   const handleDelete = async (docName: string) => {
     if (!confirm(`¿Estás seguro de que deseas eliminar "${docName}"?`)) {
@@ -134,6 +149,13 @@ export default function DocumentList({ classId, documents }: DocumentListProps) 
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                   ✓ Procesado
                 </span>
+              ) : doc.processed === false && !processing ? (
+                <>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 animate-pulse">
+                    🔄 Procesando...
+                  </span>
+                  <span className="text-xs text-gray-500">(Espera unos segundos)</span>
+                </>
               ) : (
                 <>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">

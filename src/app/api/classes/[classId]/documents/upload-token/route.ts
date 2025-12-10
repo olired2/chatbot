@@ -71,7 +71,7 @@ export async function POST(
         // Extraer nombre del archivo desde la URL
         const fileName = blob.pathname.split('/').pop() || 'documento.pdf';
         
-        await ClassModel.findByIdAndUpdate(
+        const updatedClass = await ClassModel.findByIdAndUpdate(
           payload.classId,
           {
             $push: {
@@ -84,10 +84,44 @@ export async function POST(
                 processed: false
               }
             }
-          }
+          },
+          { new: true }
         );
         
         console.log(`📝 Documento registrado en clase ${payload.classId}`);
+        
+        // Iniciar procesamiento en background
+        const lastDocument = updatedClass.documents[updatedClass.documents.length - 1];
+        const internalToken = process.env.CRON_SECRET_TOKEN || 'default-secret';
+        
+        // Obtener la URL base del request actual
+        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+        const processUrl = `${baseUrl}/api/classes/${payload.classId}/documents/process`;
+        
+        console.log(`🔄 Iniciando procesamiento automático: ${processUrl}`);
+        
+        // Fire and forget - no esperamos la respuesta
+        fetch(processUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${internalToken}`,
+          },
+          body: JSON.stringify({
+            documentId: lastDocument._id.toString(),
+            documentUrl: blob.url,
+          }),
+        }).then(response => {
+          if (response.ok) {
+            console.log('✅ Procesamiento iniciado exitosamente');
+          } else {
+            response.text().then(text => {
+              console.error('⚠️ Error iniciando procesamiento:', text);
+            });
+          }
+        }).catch(error => {
+          console.error('⚠️ Error en procesamiento background:', error);
+        });
       },
     });
 
