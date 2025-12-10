@@ -17,7 +17,7 @@ export default async function LoginPage() {
           Bienvenido
         </h1>
         <p className="text-gray-500 text-sm">
-          Accede al Agente Educativo desde su cuenta
+          Accede a tu chatbot con tu cuenta
         </p>
       </div>
       <LoginForm />

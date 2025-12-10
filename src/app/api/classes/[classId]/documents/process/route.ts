@@ -175,6 +175,7 @@ export async function POST(
       classId,
       {
         $set: {
+          'documents.$[doc].embeddings': true,
           'documents.$[doc].processed': true,
           'documents.$[doc].processedAt': new Date(),
         },
