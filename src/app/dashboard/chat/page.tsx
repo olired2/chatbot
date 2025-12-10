@@ -62,9 +62,9 @@ export default async function ChatPage() {
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Chat con Mentor IA</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Conversa con MentorBot</h1>
         <p className="text-sm text-gray-600 mb-6">
-          Haz preguntas sobre el contenido de tus clases y obtén respuestas basadas en los documentos compartidos por tu profesor.
+          Dale instrucciones sobre el contenido de tus clases y obtén respuestas basadas en los documentos compartidos por tu profesor.
         </p>
         {serializedClasses.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg shadow">

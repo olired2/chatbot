@@ -139,7 +139,7 @@ export default function Chatbot({ classes }: ChatbotProps) {
       {/* Header con selección de clase */}
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-3 sm:p-4">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-base sm:text-lg font-semibold">🤖 Mentor IA</h2>
+          <h2 className="text-base sm:text-lg font-semibold">🤖 MentorBot</h2>
           {messages.length > 0 && (
             <button
               onClick={loadChatHistory}
@@ -209,9 +209,9 @@ export default function Chatbot({ classes }: ChatbotProps) {
                 d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
               />
             </svg>
-            <p className="text-sm font-medium">¡Hola! Soy tu Mentor IA</p>
+            <p className="text-sm font-medium">¡Hola! Soy MentorBot</p>
             <p className="text-xs mt-2">
-              Hazme preguntas sobre el contenido de la clase
+              Dale una instrucción sobre el contenido de la clase
             </p>
           </div>
         ) : (
@@ -295,7 +295,7 @@ export default function Chatbot({ classes }: ChatbotProps) {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Escribe tu pregunta aquí..."
+            placeholder="Dale una instrucción a MentorBot..."
             disabled={loading}
             className="flex-1 p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 placeholder-gray-500 text-gray-900 text-sm sm:text-base"
           />
