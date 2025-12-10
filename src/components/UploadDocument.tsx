@@ -69,20 +69,25 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
 
       console.log('Archivo subido:', blob.url);
       setProgress(100);
-      setMessage('✅ Documento subido exitosamente. Procesando...');
+      setMessage('✅ Documento subido exitosamente. Procesando automáticamente...');
       setFile(null);
       
       // Reset file input
       const fileInput = document.getElementById('file-upload') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
 
-      // Esperar 2 segundos para que el usuario vea el mensaje
+      // Esperar 3 segundos para que el usuario vea el mensaje
       setTimeout(() => {
-        router.refresh();
-        if (onUploadSuccess) {
-          onUploadSuccess();
-        }
-      }, 2000);
+        setMessage('🔄 El documento se está procesando en segundo plano. Aparecerá en la lista en unos momentos.');
+        
+        // Después de otros 2 segundos, refrescar
+        setTimeout(() => {
+          router.refresh();
+          if (onUploadSuccess) {
+            onUploadSuccess();
+          }
+        }, 2000);
+      }, 3000);
     } catch (err) {
       console.error('Error uploading:', err);
       let errorMessage = 'Error desconocido al subir el archivo';
