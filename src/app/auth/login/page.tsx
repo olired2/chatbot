@@ -17,7 +17,7 @@ export default async function LoginPage() {
           Bienvenido
         </h1>
         <p className="text-gray-500 text-sm">
-          Accede a tu chatbot con tu cuenta
+          Accede a tu agente virtual con tu cuenta
         </p>
       </div>
       <LoginForm />

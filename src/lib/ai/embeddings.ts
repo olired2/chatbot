@@ -6,7 +6,7 @@ const DOCS_PATH = path.join(process.cwd(), 'uploads');
 const CHROMA_PATH = path.join(process.cwd(), 'chroma_db');
 
 if (!process.env.GOOGLE_API_KEY) {
-  console.warn('⚠️ GOOGLE_API_KEY no encontrada. El chatbot no funcionará.');
+  console.warn('⚠️ GOOGLE_API_KEY no encontrada. El agente virtual no funcionará.');
 }
 
 const genAI = process.env.GOOGLE_API_KEY 
