@@ -1,8 +1,8 @@
-# 🏗️ Arquitectura del Chatbot Educativo - Cultura Empresarial
+# 🏗️ Arquitectura del Agente Virtual Educativo - Cultura Empresarial
 
 ## 📋 Resumen Ejecutivo
 
-Sistema educativo basado en **Next.js 16** con **RAG (Retrieval Augmented Generation)** que permite a profesores crear clases, subir documentos PDF y a estudiantes interactuar con un chatbot inteligente alimentado por **Groq AI**.
+Sistema educativo basado en **Next.js 16** con **RAG (Retrieval Augmented Generation)** que permite a profesores crear clases, subir documentos PDF y a estudiantes interactuar con un agente virtual inteligente alimentado por **Groq AI**.
 
 ---
 
@@ -88,7 +88,7 @@ residencia/
 │   │   │   │   └── 📂 register/         # Registro de usuarios
 │   │   │   ├── 📂 classes/              # API de clases
 │   │   │   │   ├── 📂 [classId]/        # APIs específicas por clase
-│   │   │   │   │   ├── 📂 chat/         # Endpoint del chatbot
+│   │   │   │   │   ├── 📂 chat/         # Endpoint del agente virtual
 │   │   │   │   │   │   └── 📂 history/  # Historial de chat
 │   │   │   │   │   └── 📂 documents/    # Gestión de documentos
 │   │   │   │   └── route.ts             # CRUD de clases
@@ -106,7 +106,7 @@ residencia/
 │   ├── 📂 components/                   # Componentes React
 │   │   ├── 📂 auth/                     # Formularios de autenticación
 │   │   ├── 📂 layouts/                  # Layouts reutilizables
-│   │   ├── Chatbot.tsx                  # Interfaz de chat principal
+│   │   ├── AgenteVirtual.tsx           # Interfaz de chat principal
 │   │   ├── ClassesClient.tsx            # Lista de clases
 │   │   ├── CreateClassModal.tsx         # Modal crear clase
 │   │   ├── DocumentList.tsx             # Lista de documentos
@@ -360,8 +360,8 @@ Si la pregunta no está relacionada con el tema, redirige amablemente.
 - `GET /api/classes/[classId]/documents` - Listar documentos
 - `DELETE /api/classes/[classId]/documents` - Eliminar documento
 
-### **Chatbot**
-- `POST /api/classes/[classId]/chat` - Enviar pregunta al chatbot
+### **Agente Virtual**
+- `POST /api/classes/[classId]/chat` - Enviar pregunta al agente virtual
 - `GET /api/classes/[classId]/chat/history` - Obtener historial
 
 
@@ -387,7 +387,7 @@ app/layout.tsx (Root Layout)
 
 ### **Componentes Principales**
 
-**🤖 Chatbot.tsx** (Cliente)
+**🤖 AgenteVirtual.tsx** (Cliente)
 ```typescript
 // Features implementadas:
 - ✅ Real-time messaging interface
@@ -468,7 +468,7 @@ sequenceDiagram
     S->>Auth: Login
     Auth->>S: Redirect to /dashboard/chat
     
-    S->>API: Send question to chatbot
+    S->>API: Send question to agente virtual
     API->>API: Load document chunks (RAG)
     API->>Groq: Query with context
     Groq->>API: Return AI response

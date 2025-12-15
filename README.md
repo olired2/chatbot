@@ -1,6 +1,6 @@
 # 🤖 MentorBot - Sistema de Chat Educativo con IA
 
-Sistema educativo inteligente que permite a estudiantes interactuar con documentos de clase a través de un chatbot con inteligencia artificial.
+Sistema educativo inteligente que permite a estudiantes interactuar con documentos de clase a través de un agente virtual con inteligencia artificial.
 
 ## ✨ Características Principales
 
