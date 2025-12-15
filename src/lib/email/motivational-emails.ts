@@ -154,7 +154,7 @@ export async function sendMotivationalEmail(
   daysInactive: number
 ) {
   const maxAttempts = 3;
-  const fromAddress = process.env.EMAIL_FROM || 'chatbot@residencia.edu';
+  const fromAddress = process.env.EMAIL_FROM || 'mentor@residencia.edu';
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {

@@ -25,9 +25,10 @@ export async function sendVerificationEmail(
 ): Promise<boolean> {
   try {
     // URL de producción o desarrollo
-    const baseUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://chatbot-plum-eta-53.vercel.app' 
-      : 'http://localhost:3000';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.BASE_URL || 
+      (process.env.NODE_ENV === 'production' 
+        ? 'https://chatbot-plum-eta-53.vercel.app' 
+        : 'http://localhost:3000');
     
     const verificationUrl = `${baseUrl}/auth/verify-email?token=${token}`;
     
