@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
-const MONGODB_DB = process.env.MONGO_DBNAME || 'chatbot';
+const MONGODB_DB = process.env.MONGO_DBNAME || 'residencia';
 
 if (!MONGODB_URI) {
   throw new Error(
