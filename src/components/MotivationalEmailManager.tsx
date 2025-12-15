@@ -85,29 +85,16 @@ export default function MotivationalEmailManager() {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h3 className="text-xl font-bold mb-4">📧 Correos Motivacionales Automáticos</h3>
+      <h3 className="text-xl font-bold mb-2">📧 Correos Motivacionales Automáticos</h3>
       <p className="text-gray-600 mb-6">
-        Sistema que envía correos automáticos a estudiantes que no han interactuado con MentorBot por 15 días o más.
+        El sistema envía automáticamente cada mañana a las 9:00 AM correos motivacionales a estudiantes que no han interactuado por 15 días o más.
       </p>
 
       {/* Controles principales */}
-      <div className="flex flex-wrap gap-4 mb-6">
-        <button
-          onClick={runEmailProcess}
-          disabled={isSending}
-          className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-base font-medium"
-        >
-          {isSending ? (
-            <>
-              <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-              Enviando correos...
-            </>
-          ) : (
-            <>
-              📨 Enviar Correos a Estudiantes Inactivos
-            </>
-          )}
-        </button>
+      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <p className="text-sm text-blue-800">
+          <span className="font-semibold">⏰ Ejecución automática:</span> Diaria a las 9:00 AM
+        </p>
       </div>
 
       {/* Mensaje de resultado */}
@@ -119,12 +106,61 @@ export default function MotivationalEmailManager() {
         </div>
       )}
 
-      {/* Estadísticas simplificadas */}
+      {/* Estadísticas y Correos Recientes */}
       {stats && (
-        <div>
+        <div className="space-y-6">
+          {/* Total de correos */}
           <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
             <span className="font-semibold text-green-800">Correos enviados:</span>
             <span className="text-2xl font-bold text-green-600">{stats.totalEmails}</span>
+          </div>
+
+          {/* Correos recientes */}
+          <div>
+            <h4 className="font-semibold mb-3 text-gray-800">📋 Correos Enviados Recientemente</h4>
+            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              {stats.recentEmails.length > 0 ? (
+                <div className="divide-y divide-gray-200">
+                  {stats.recentEmails.map((email) => (
+                    <div key={email._id} className="p-4 hover:bg-gray-50 transition">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900">{email.email_enviado_a}</div>
+                          <div className="text-sm text-gray-500 mt-1">
+                            Enviado hace: {new Date(email.fecha_envio).toLocaleDateString('es-MX', { 
+                              year: 'numeric', 
+                              month: 'short', 
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </div>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ml-2 ${
+                          email.estado === 'enviado' ? 'bg-green-100 text-green-800' :
+                          email.estado === 'fallido' ? 'bg-red-100 text-red-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {email.estado === 'enviado' ? '✅ Enviado' :
+                           email.estado === 'fallido' ? '❌ Fallido' :
+                           '⏳ Pendiente'}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-600 flex gap-4">
+                        <span>📧 {email.tipo_correo === 'inactividad_15_dias' ? 'Inactividad (15 días)' : email.tipo_correo}</span>
+                        <span>⏰ {email.dias_inactividad} días sin interacción</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 text-center">
+                  <div className="text-4xl mb-2">📭</div>
+                  <p className="text-gray-600">No hay correos enviados aún</p>
+                  <p className="text-gray-400 text-sm mt-1">Los correos aparecerán aquí una vez que se envíen</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
