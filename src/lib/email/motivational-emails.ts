@@ -1,15 +1,27 @@
 import nodemailer from 'nodemailer';
 
-// Configurar el transporter de nodemailer
+// URL base para enlaces en plantillas (configurable)
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.BASE_URL || 'https://chatbot-plum-eta-53.vercel.app';
+
+// Configurar el transporter de nodemailer con validación
 const createTransporter = () => {
+  const host = process.env.EMAIL_HOST || 'smtp.gmail.com';
+  const port = parseInt(process.env.EMAIL_PORT || '587');
+  const user = process.env.EMAIL_USER;
+  const pass = process.env.EMAIL_PASS;
+
+  if (!user || !pass) {
+    throw new Error('EMAIL_USER y/o EMAIL_PASS no están configuradas en el entorno');
+  }
+
+  const secure = process.env.EMAIL_SECURE === 'true' || port === 465;
+
   return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.EMAIL_PORT || '587'),
-    secure: false, // true para 465, false para otros puertos
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
+    host,
+    port,
+    secure,
+    auth: { user, pass },
+    tls: { rejectUnauthorized: false }
   });
 };
 
@@ -125,6 +137,11 @@ const getMotivationalEmailTemplate = (studentName: string, className: string, da
     }
   ];
 
+  // Reemplazar enlaces localhost por la URL de despliegue
+  templates.forEach(t => {
+    t.html = t.html.replace(/http:\/\/localhost:3000/g, BASE_URL);
+  });
+
   // Elegir plantilla aleatoria
   return templates[Math.floor(Math.random() * templates.length)];
 };
@@ -136,26 +153,41 @@ export async function sendMotivationalEmail(
   className: string, 
   daysInactive: number
 ) {
-  try {
-    const transporter = createTransporter();
-    const template = getMotivationalEmailTemplate(studentName, className, daysInactive);
-    
-    const mailOptions = {
-      from: `"🤖 Mentor de IA" <${process.env.EMAIL_FROM || 'chatbot@residencia.edu'}>`,
-      to: studentEmail,
-      subject: template.subject,
-      html: template.html,
-    };
+  const maxAttempts = 3;
+  const fromAddress = process.env.EMAIL_FROM || 'chatbot@residencia.edu';
 
-    const result = await transporter.sendMail(mailOptions);
-    
-    console.log(`✅ Correo motivacional enviado a ${studentName} (${studentEmail})`);
-    return { success: true, messageId: result.messageId };
-    
-  } catch (error) {
-    console.error(`❌ Error enviando correo a ${studentEmail}:`, error);
-    return { success: false, error: error instanceof Error ? error.message : 'Error desconocido' };
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const transporter = createTransporter();
+      const template = getMotivationalEmailTemplate(studentName, className, daysInactive);
+
+      const mailOptions = {
+        from: `"🤖 Mentor de IA" <${fromAddress}>`,
+        to: studentEmail,
+        subject: template.subject,
+        html: template.html,
+      };
+
+      const result = await transporter.sendMail(mailOptions);
+      console.log(`✅ Correo motivacional enviado a ${studentName} (${studentEmail}) [attempt ${attempt}]`);
+      return { success: true, messageId: result.messageId };
+
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.error(`❌ Error enviando correo a ${studentEmail} (attempt ${attempt}):`, errMsg);
+
+      // Si fue el último intento devolver el error
+      if (attempt === maxAttempts) {
+        return { success: false, error: errMsg };
+      }
+
+      // Espera exponencial antes del siguiente intento
+      const backoffMs = 500 * Math.pow(2, attempt - 1);
+      await new Promise(res => setTimeout(res, backoffMs));
+    }
   }
+
+  return { success: false, error: 'No se pudo enviar el correo después de varios intentos' };
 }
 
 // Función para verificar configuración de correo
