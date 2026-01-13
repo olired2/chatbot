@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+
+// Suprime el aviso de deprecación de url.parse() de dependencias externas
 const nextConfig = {
   async headers() {
     return [
@@ -21,6 +23,13 @@ const nextConfig = {
       },
     ];
   },
+  // Suprimir advertencias de deprecación de dependencias
+  experimental: {
+    suppressHydrationWarning: true,
+  },
 };
+
+// Suppress deprecation warning from dependencies
+process.noDeprecation = true;
 
 module.exports = nextConfig;

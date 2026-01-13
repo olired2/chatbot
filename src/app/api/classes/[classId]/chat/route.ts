@@ -60,77 +60,61 @@ export async function POST(
     }
 
     // Query documents using embeddings from Supabase
-    try {
-      const searchResults = await searchDocuments(classId, question, 5);
-      const context = searchResults.map(r => r.content).join('\n\n');
+    const searchResults = await searchDocuments(classId, question, 5);
+    
+    // Preparar contexto (puede estar vacío si no hay embeddings aún)
+    const context = searchResults.length > 0 
+      ? searchResults.map(r => r.content).join('\n\n')
+      : '';
+    
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    
+    const systemPrompt = `Eres un asistente educativo especializado en la clase: ${classDoc.name}
       
-      const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-      
-      const systemPrompt = `Eres un asistente educativo especializado en la clase: ${classDoc.name}
-      
-Tienes acceso a documentos de la clase. Usa el siguiente contexto para responder preguntas de forma clara, educativa y amigable.
+${context ? `Tienes acceso a documentos de la clase. Usa el siguiente contexto para responder preguntas de forma clara, educativa y amigable.
 
 CONTEXTO DE DOCUMENTOS:
-${context || 'No hay documentos disponibles aún.'}
+${context}` : `Aún no hay documentos disponibles con embeddings indexados en esta clase. Sin embargo, puedo ayudarte con preguntas generales sobre ${classDoc.name}.`}
 
 Instrucciones:
-- Si la pregunta está relacionada con el contexto, usa ese información
-- Si no encuentras información en el contexto, di que no encontraste esa información en los documentos
+- Si hay documentos en el contexto y la pregunta está relacionada, usa esa información
+- Si no hay documentos o no encuentras información, explica educadamente qué no encontraste
 - Siempre sé educativo y alentador
 - Explica conceptos de forma clara y accesible`;
 
-      const message = await groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 1024,
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
-          },
-          {
-            role: 'user',
-            content: question
-          }
-        ],
-      });
+    const message = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'system',
+          content: systemPrompt
+        },
+        {
+          role: 'user',
+          content: question
+        }
+      ],
+    });
 
-      const answer = message.choices[0]?.message?.content || 'No se pudo generar una respuesta';
-      
-      // Guardar interacción en la base de datos
-      await InteractionModel.create({
-        usuario_id: session.user.id,
-        clase_id: classId,
-        pregunta: question,
-        respuesta: answer,
-        sources: searchResults.map(r => r.documentId) || [],
-        fecha: new Date()
-      });
-      
-      // Return formatted response
-      return NextResponse.json({ 
-        success: true,
-        answer, 
-        sources: searchResults 
-      });
-    } catch (embeddingError) {
-      console.error('Error en búsqueda de embeddings:', embeddingError);
-      
-      let errorAnswer = 'Lo siento, hubo un problema al procesar tu pregunta. Esto puede deberse a que los documentos aún están siendo procesados. Por favor, intenta nuevamente en unos momentos.';
-      
-      // Guardar error también
-      await InteractionModel.create({
-        usuario_id: session.user.id,
-        clase_id: classId,
-        pregunta: question,
-        respuesta: errorAnswer,
-        fecha: new Date()
-      });
-      
-      return NextResponse.json({
-        answer: errorAnswer,
-        sources: []
-      });
-    }
+    const answer = message.choices[0]?.message?.content || 'No se pudo generar una respuesta';
+    
+    // Guardar interacción en la base de datos
+    await InteractionModel.create({
+      usuario_id: session.user.id,
+      clase_id: classId,
+      pregunta: question,
+      respuesta: answer,
+      sources: searchResults.map(r => r.documentId) || [],
+      fecha: new Date()
+    });
+    
+    // Return formatted response
+    return NextResponse.json({ 
+      success: true,
+      answer, 
+      sources: searchResults 
+    });
   } catch (error) {
     console.error('Error in chat:', error);
     const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
