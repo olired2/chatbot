@@ -127,17 +127,30 @@ export async function searchDocuments(
     });
 
     if (error) {
+      console.error('Error de RPC en Supabase:', error);
+      // Si no hay embeddings aún, devolver array vacío en lugar de fallar
+      if (error.message && error.message.includes('function')) {
+        console.warn('Función search_embeddings no existe aún. Asegúrate de ejecutar el SQL en Supabase.');
+        return [];
+      }
       throw error;
     }
 
-    return (data || []).map((result: any) => ({
+    if (!data || data.length === 0) {
+      console.warn(`No se encontraron documentos para la clase ${classId}`);
+      return [];
+    }
+
+    return data.map((result: any) => ({
       content: result.content,
       similarity: result.similarity,
       documentId: result.document_id,
     }));
   } catch (error) {
     console.error('Error buscando documentos:', error);
-    throw error;
+    // Retornar array vacío en lugar de lanzar excepción
+    // Esto permite que el chatbot funcione incluso sin documentos indexados
+    return [];
   }
 }
 
