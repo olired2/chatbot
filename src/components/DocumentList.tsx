@@ -96,6 +96,9 @@ export default function DocumentList({ classId, documents }: DocumentListProps) 
       }
 
       alert(`✅ Documento procesado exitosamente en ${data.chunks} fragmentos`);
+      
+      // Recargar documentos después de procesar
+      await new Promise(resolve => setTimeout(resolve, 500)); // Esperar un poco para que MongoDB actualice
       router.refresh();
     } catch (error) {
       console.error('Error:', error);
