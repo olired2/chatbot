@@ -92,7 +92,17 @@ export async function POST(
     const fullText = await new Promise<string>((resolve, reject) => {
       const pdfParser = new PDFParser(null, true);
       
+      // Suprimir logs de warnings de pdf2json
+      const originalLog = console.warn;
+      console.warn = (...args: any[]) => {
+        const message = args.join(' ');
+        if (!message.includes('NOT valid form') && !message.includes('Unsupported: field.type')) {
+          originalLog(...args);
+        }
+      };
+      
       pdfParser.on('pdfParser_dataError', (errData: any) => {
+        console.warn = originalLog; // Restaurar console.warn
         reject(new Error(`PDF parsing error: ${errData.parserError}`));
       });
       
@@ -121,12 +131,16 @@ export async function POST(
 
           resolve(text);
         } catch (error) {
+          console.warn = originalLog; // Restaurar console.warn
           reject(error);
         }
       });
       
       pdfParser.parseBuffer(pdfBuffer);
     });
+
+    // Restaurar console.warn después del Promise
+    console.warn = originalLog;
 
     if (fullText.trim().length === 0) {
       return NextResponse.json(
