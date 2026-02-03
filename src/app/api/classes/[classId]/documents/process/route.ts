@@ -90,11 +90,26 @@ export async function POST(
     const PDFParser = (await import('pdf2json')).default;
     
     // Suprimir logs de warnings de pdf2json
-    const originalLog = console.warn;
-    console.warn = (...args: any[]) => {
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    
+    const filterLogs = (...args: any[]) => {
       const message = args.join(' ');
-      if (!message.includes('NOT valid form') && !message.includes('Unsupported: field.type')) {
+      if (!message.includes('NOT valid form') && !message.includes('Unsupported: field.type') && !message.includes('Setting up fake worker')) {
+        return true;
+      }
+      return false;
+    };
+    
+    console.log = (...args: any[]) => {
+      if (filterLogs(...args)) {
         originalLog(...args);
+      }
+    };
+    
+    console.warn = (...args: any[]) => {
+      if (filterLogs(...args)) {
+        originalWarn(...args);
       }
     };
     
@@ -211,8 +226,9 @@ export async function POST(
       chunks: chunks.length,
     });
     } finally {
-      // Restaurar console.warn en caso de error
-      console.warn = originalLog;
+      // Restaurar console en caso de error
+      console.log = originalLog;
+      console.warn = originalWarn;
     }
   } catch (error) {
     console.error('❌ Error procesando documento:', error);
