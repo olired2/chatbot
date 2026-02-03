@@ -82,6 +82,13 @@ export default function DocumentList({ classId, documents }: DocumentListProps) 
         }),
       });
 
+      // Verificar que la respuesta es JSON válida
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        throw new Error(`Respuesta inválida del servidor: ${text.substring(0, 100)}`);
+      }
+
       const data = await response.json();
 
       if (!response.ok) {
