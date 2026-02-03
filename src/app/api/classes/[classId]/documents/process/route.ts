@@ -95,10 +95,17 @@ export async function POST(
     // Suprimir logs de warnings de pdf2json
     const filterLogs = (...args: any[]) => {
       const message = args.join(' ');
-      if (!message.includes('NOT valid form') && !message.includes('Unsupported: field.type') && !message.includes('Setting up fake worker')) {
-        return true;
+      // Filtrar warnings comunes de pdf2json
+      if (
+        message.includes('NOT valid form') ||
+        message.includes('Unsupported: field.type') ||
+        message.includes('Setting up fake worker') ||
+        message.includes('TT: undefined function') ||
+        message.includes('undefined function')
+      ) {
+        return false; // No mostrar estos logs
       }
-      return false;
+      return true; // Mostrar otros logs
     };
     
     console.log = (...args: any[]) => {
