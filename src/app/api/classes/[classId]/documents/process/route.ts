@@ -89,81 +89,80 @@ export async function POST(
     // Parsear el PDF con pdf2json
     const PDFParser = (await import('pdf2json')).default;
     
-    const fullText = await new Promise<string>((resolve, reject) => {
-      const pdfParser = new PDFParser(null, true);
-      
-      // Suprimir logs de warnings de pdf2json
-      const originalLog = console.warn;
-      console.warn = (...args: any[]) => {
-        const message = args.join(' ');
-        if (!message.includes('NOT valid form') && !message.includes('Unsupported: field.type')) {
-          originalLog(...args);
-        }
-      };
-      
-      pdfParser.on('pdfParser_dataError', (errData: any) => {
-        console.warn = originalLog; // Restaurar console.warn
-        reject(new Error(`PDF parsing error: ${errData.parserError}`));
-      });
-      
-      pdfParser.on('pdfParser_dataReady', () => {
-        try {
-          let text = '';
-          
-          const data = pdfParser.data as any;
-          if (data && data.Pages) {
-            for (const page of data.Pages) {
-              if (page.Texts) {
-                for (const textObj of page.Texts) {
-                  if (textObj.R && textObj.R[0] && textObj.R[0].T) {
-                    try {
-                      // Intentar decodificar, si falla usar el texto tal cual
-                      text += decodeURIComponent(textObj.R[0].T) + ' ';
-                    } catch (decodeError) {
-                      // Si falla el decode, usar el texto sin decodificar
-                      text += textObj.R[0].T.replace(/%20/g, ' ').replace(/%[0-9A-Fa-f]{2}/g, '') + ' ';
+    // Suprimir logs de warnings de pdf2json
+    const originalLog = console.warn;
+    console.warn = (...args: any[]) => {
+      const message = args.join(' ');
+      if (!message.includes('NOT valid form') && !message.includes('Unsupported: field.type')) {
+        originalLog(...args);
+      }
+    };
+    
+    try {
+      const fullText = await new Promise<string>((resolve, reject) => {
+        const pdfParser = new PDFParser(null, true);
+        
+        pdfParser.on('pdfParser_dataError', (errData: any) => {
+          reject(new Error(`PDF parsing error: ${errData.parserError}`));
+        });
+        
+        pdfParser.on('pdfParser_dataReady', () => {
+          try {
+            let text = '';
+            
+            const data = pdfParser.data as any;
+            if (data && data.Pages) {
+              for (const page of data.Pages) {
+                if (page.Texts) {
+                  for (const textObj of page.Texts) {
+                    if (textObj.R && textObj.R[0] && textObj.R[0].T) {
+                      try {
+                        // Intentar decodificar, si falla usar el texto tal cual
+                        text += decodeURIComponent(textObj.R[0].T) + ' ';
+                      } catch (decodeError) {
+                        // Si falla el decode, usar el texto sin decodificar
+                        text += textObj.R[0].T.replace(/%20/g, ' ').replace(/%[0-9A-Fa-f]{2}/g, '') + ' ';
+                      }
                     }
                   }
                 }
               }
             }
+
+            resolve(text);
+          } catch (error) {
+            reject(error);
           }
-
-          resolve(text);
-        } catch (error) {
-          console.warn = originalLog; // Restaurar console.warn
-          reject(error);
-        }
+        });
+        
+        pdfParser.parseBuffer(pdfBuffer);
       });
-      
-      pdfParser.parseBuffer(pdfBuffer);
-    });
 
-    // Restaurar console.warn después del Promise
-    console.warn = originalLog;
+      // Restaurar console.warn después del Promise
+      console.warn = originalLog;
 
-    if (fullText.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'No se pudo extraer texto del PDF' },
-        { status: 400 }
-      );
-    }
+      if (fullText.trim().length === 0) {
+        return NextResponse.json(
+          { error: 'No se pudo extraer texto del PDF' },
+          { status: 400 }
+        );
+      }
 
-    console.log(`📝 Texto extraído: ${fullText.length} caracteres`);
+      console.log(`📝 Texto extraído: ${fullText.length} caracteres`);
 
-    // Dividir en chunks
-    const chunks = splitTextIntoChunks(fullText, 500, 100);
-    console.log(`✂️ Documento dividido en ${chunks.length} fragmentos`);
+      // Dividir en chunks
+      const chunks = splitTextIntoChunks(fullText, 500, 100);
+      console.log(`✂️ Documento dividido en ${chunks.length} fragmentos`);
 
-    // Generar embeddings en lotes para evitar timeout
-    const BATCH_SIZE = 10; // Procesar 10 chunks a la vez
-    let totalProcessed = 0;
+      // Generar embeddings en lotes para evitar timeout
+      const BATCH_SIZE = 10; // Procesar 10 chunks a la vez
+      let totalProcessed = 0;
 
-    for (let batchStart = 0; batchStart < chunks.length; batchStart += BATCH_SIZE) {
-      const batchEnd = Math.min(batchStart + BATCH_SIZE, chunks.length);
-      const batchChunks = chunks.slice(batchStart, batchEnd);
-      
-      console.log(`⏳ Procesando lote ${Math.floor(batchStart/BATCH_SIZE) + 1}/${Math.ceil(chunks.length/BATCH_SIZE)} (chunks ${batchStart + 1}-${batchEnd})...`);
+      for (let batchStart = 0; batchStart < chunks.length; batchStart += BATCH_SIZE) {
+        const batchEnd = Math.min(batchStart + BATCH_SIZE, chunks.length);
+        const batchChunks = chunks.slice(batchStart, batchEnd);
+        
+        console.log(`⏳ Procesando lote ${Math.floor(batchStart/BATCH_SIZE) + 1}/${Math.ceil(chunks.length/BATCH_SIZE)} (chunks ${batchStart + 1}-${batchEnd})...`);
 
       // Generar embeddings para este lote
       const embeddingChunks: DocumentChunk[] = [];
@@ -211,6 +210,10 @@ export async function POST(
       message: 'Documento procesado exitosamente',
       chunks: chunks.length,
     });
+    } finally {
+      // Restaurar console.warn en caso de error
+      console.warn = originalLog;
+    }
   } catch (error) {
     console.error('❌ Error procesando documento:', error);
     const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
