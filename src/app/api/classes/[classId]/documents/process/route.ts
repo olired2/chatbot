@@ -169,6 +169,22 @@ export async function POST(
       const chunks = splitTextIntoChunks(fullText, 500, 100);
       console.log(`✂️ Documento dividido en ${chunks.length} fragmentos`);
 
+      // Marcar como procesado en MongoDB (antes de esperar embeddings)
+      console.log(`📝 Marcando documento como procesado en MongoDB...`);
+      await ClassModel.findByIdAndUpdate(
+        classId,
+        {
+          $set: {
+            'documents.$[doc].processed': true,
+            'documents.$[doc].processedAt': new Date(),
+          },
+        },
+        {
+          arrayFilters: [{ 'doc.path': documentUrl }],
+        }
+      );
+      console.log(`✅ Documento marcado como procesado`);
+
       // Responder inmediatamente sin esperar embeddings
       console.log(`⏳ Iniciando procesamiento de embeddings en background...`);
       
