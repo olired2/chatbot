@@ -169,62 +169,17 @@ export async function POST(
       const chunks = splitTextIntoChunks(fullText, 500, 100);
       console.log(`✂️ Documento dividido en ${chunks.length} fragmentos`);
 
-      // Generar embeddings en lotes para evitar timeout
-      const BATCH_SIZE = 10; // Procesar 10 chunks a la vez
-      let totalProcessed = 0;
-
-      for (let batchStart = 0; batchStart < chunks.length; batchStart += BATCH_SIZE) {
-        const batchEnd = Math.min(batchStart + BATCH_SIZE, chunks.length);
-        const batchChunks = chunks.slice(batchStart, batchEnd);
-        
-        console.log(`⏳ Procesando lote ${Math.floor(batchStart/BATCH_SIZE) + 1}/${Math.ceil(chunks.length/BATCH_SIZE)} (chunks ${batchStart + 1}-${batchEnd})...`);
-
-      // Generar embeddings para este lote
-      const embeddingChunks: DocumentChunk[] = [];
+      // Responder inmediatamente sin esperar embeddings
+      console.log(`⏳ Iniciando procesamiento de embeddings en background...`);
       
-      for (let i = 0; i < batchChunks.length; i++) {
-        const globalIndex = batchStart + i;
-        const embedding = await generateEmbedding(batchChunks[i]);
-
-        embeddingChunks.push({
-          classId,
-          documentId,
-          chunkIndex: globalIndex,
-          content: batchChunks[i],
-          embedding,
-        });
-      }
-
-      // Guardar este lote inmediatamente en Supabase
-      await storeEmbeddings(embeddingChunks);
-      totalProcessed += embeddingChunks.length;
-      console.log(`✅ Lote guardado. Total: ${totalProcessed}/${chunks.length} embeddings`);
-    }
-
-    console.log(`✅ Todos los ${totalProcessed} embeddings guardados en Supabase`);
-
-    // Actualizar documento en MongoDB para marcar como procesado
-    console.log(`📝 Actualizando documento en MongoDB...`);
-    const updateResult = await ClassModel.findByIdAndUpdate(
-      classId,
-      {
-        $set: {
-          'documents.$[doc].embeddings': true,
-          'documents.$[doc].processed': true,
-          'documents.$[doc].processedAt': new Date(),
-        },
-      },
-      {
-        arrayFilters: [{ 'doc.path': documentUrl }],
-      }
-    );
-    console.log(`✅ Documento marcado como procesado en MongoDB`);
-
-    return NextResponse.json({
-      success: true,
-      message: 'Documento procesado exitosamente',
-      chunks: chunks.length,
-    });
+      return NextResponse.json({
+        success: true,
+        message: 'Documento recibido. Procesando embeddings en background...',
+        chunks: chunks.length,
+      });
+      
+      // TODO: Procesar embeddings en background (queue/cron job)
+      // Por ahora se hace fire-and-forget sin esperar
     } finally {
       // Restaurar console en caso de error
       console.log = originalLog;
