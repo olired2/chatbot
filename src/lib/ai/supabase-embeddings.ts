@@ -4,6 +4,10 @@ import Groq from 'groq-sdk';
 let supabase: any = null;
 let groq: any = null;
 
+// Rate limiting para Jina API
+let lastJinaRequestTime = 0;
+const JINA_MIN_DELAY_MS = 650; // 650ms entre requests = ~92 requests/min (bajo límite de 100)
+
 function initializeClients() {
   if (supabase && groq) return;
 
@@ -28,6 +32,22 @@ export interface DocumentChunk {
 }
 
 /**
+ * Espera para respetar el rate limit de Jina AI (100 req/min)
+ */
+async function waitForJinaRateLimit(): Promise<void> {
+  const now = Date.now();
+  const timeSinceLastRequest = now - lastJinaRequestTime;
+  
+  if (timeSinceLastRequest < JINA_MIN_DELAY_MS) {
+    const delayMs = JINA_MIN_DELAY_MS - timeSinceLastRequest;
+    console.log(`⏱️ Rate limiting: esperando ${delayMs}ms antes de llamar a Jina...`);
+    await new Promise(resolve => setTimeout(resolve, delayMs));
+  }
+  
+  lastJinaRequestTime = Date.now();
+}
+
+/**
  * Genera embedding para un texto usando Jina AI
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
@@ -37,6 +57,9 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     if (!jinaApiKey) {
       throw new Error('JINA_API_KEY no configurada');
     }
+    
+    // Respetar rate limit de Jina
+    await waitForJinaRateLimit();
     
     console.log(`⏳ Generando embedding con Jina AI...`);
     
