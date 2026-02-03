@@ -31,6 +31,9 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ classId: string }> }
 ) {
+  let originalLog = console.log;
+  let originalWarn = console.warn;
+  
   try {
     const { classId } = await params;
     
@@ -90,9 +93,6 @@ export async function POST(
     const PDFParser = (await import('pdf2json')).default;
     
     // Suprimir logs de warnings de pdf2json
-    const originalLog = console.log;
-    const originalWarn = console.warn;
-    
     const filterLogs = (...args: any[]) => {
       const message = args.join(' ');
       if (!message.includes('NOT valid form') && !message.includes('Unsupported: field.type') && !message.includes('Setting up fake worker')) {
