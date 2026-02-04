@@ -14,7 +14,9 @@ interface DocumentData {
   uploadedAt?: Date;
   size?: number;
   embeddings?: boolean;
+  processed?: boolean;
   path?: string;
+  _id?: unknown;
 }
 
 interface StudentData {
@@ -90,7 +92,9 @@ export default async function ClassDetailPage({
     uploadedAt: doc.uploadedAt ? new Date(doc.uploadedAt).toISOString() : new Date().toISOString(),
     size: doc.size || 0,
     embeddings: doc.embeddings || false,
-    path: doc.path || ''
+    processed: doc.processed || false,
+    path: doc.path || '',
+    _id: doc._id ? String(doc._id) : undefined
   }));
 
   // Obtener última interacción de cada estudiante
