@@ -24,7 +24,7 @@ export default function DocumentList({ classId, documents: initialDocuments }: D
   const [processing, setProcessing] = useState<string | null>(null);
   const router = useRouter();
 
-  // Auto-refresh cada 5 segundos si hay documentos pendientes (sin procesar)
+  // Auto-refresh cada 10 segundos si hay documentos pendientes (sin procesar)
   useEffect(() => {
     // Solo refrescar si hay documentos que aún no están marcados como procesados
     const hasPendingDocs = documents.some(doc => !doc.processed && !doc.embeddings);
@@ -38,11 +38,6 @@ export default function DocumentList({ classId, documents: initialDocuments }: D
       return () => clearInterval(interval);
     }
   }, [documents, router]);
-
-  // Actualizar documentos cuando cambian los props iniciales
-  useEffect(() => {
-    setDocuments(initialDocuments);
-  }, [initialDocuments]);
 
   const handleDelete = async (docName: string) => {
     if (!confirm(`¿Estás seguro de que deseas eliminar "${docName}"?`)) {
