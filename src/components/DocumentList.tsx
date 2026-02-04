@@ -102,12 +102,20 @@ export default function DocumentList({ classId, documents: initialDocuments }: D
         throw new Error(data.details || data.error || 'Error al procesar documento');
       }
 
-      // Actualizar el estado local inmediatamente
+      // Actualizar el estado local inmediatamente - SOLO el documento procesado
       setDocuments(prevDocs => 
-        prevDocs.map(d => 
-          d._id === doc._id || d.name === doc.name
+        prevDocs.map(d => {
+          // Comparar de forma más precisa
+          const isMatch = (
+            (d._id && doc._id && d._id === doc._id) ||
+            (d.name === doc.name && d.path === doc.path)
+          );
+          
+          return isMatch
             ? { ...d, processed: true, embeddings: true }
-            : d
+            : d;
+        })
+      );
         )
       );
 
