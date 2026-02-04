@@ -18,7 +18,8 @@ interface DocumentListProps {
   documents: Document[];
 }
 
-export default function DocumentList({ classId, documents }: DocumentListProps) {
+export default function DocumentList({ classId, documents: initialDocuments }: DocumentListProps) {
+  const [documents, setDocuments] = useState<Document[]>(initialDocuments);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
   const router = useRouter();
@@ -36,6 +37,11 @@ export default function DocumentList({ classId, documents }: DocumentListProps) 
       return () => clearInterval(interval);
     }
   }, [documents, router]);
+
+  // Actualizar documentos cuando cambian los props iniciales
+  useEffect(() => {
+    setDocuments(initialDocuments);
+  }, [initialDocuments]);
 
   const handleDelete = async (docName: string) => {
     if (!confirm(`¿Estás seguro de que deseas eliminar "${docName}"?`)) {
@@ -95,10 +101,19 @@ export default function DocumentList({ classId, documents }: DocumentListProps) 
         throw new Error(data.details || data.error || 'Error al procesar documento');
       }
 
+      // Actualizar el estado local inmediatamente
+      setDocuments(prevDocs => 
+        prevDocs.map(d => 
+          d._id === doc._id || d.name === doc.name
+            ? { ...d, processed: true, embeddings: false }
+            : d
+        )
+      );
+
       alert(`✅ Documento procesado exitosamente en ${data.chunks} fragmentos`);
       
-      // Recargar documentos después de procesar
-      await new Promise(resolve => setTimeout(resolve, 500)); // Esperar un poco para que MongoDB actualice
+      // Recargar después para sincronizar con el servidor
+      await new Promise(resolve => setTimeout(resolve, 1000));
       router.refresh();
     } catch (error) {
       console.error('Error:', error);
