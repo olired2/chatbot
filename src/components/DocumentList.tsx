@@ -116,8 +116,6 @@ export default function DocumentList({ classId, documents: initialDocuments }: D
             : d;
         })
       );
-        )
-      );
 
       alert(`✅ Documento procesado exitosamente en ${data.chunks} fragmentos`);
     } catch (error) {
