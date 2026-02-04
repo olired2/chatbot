@@ -177,7 +177,7 @@ export default function DocumentList({ classId, documents: initialDocuments }: D
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                   ✓ Procesado
                 </span>
-              ) : doc.processed === false && !processing ? (
+              ) : doc.processed && !doc.embeddings ? (
                 <>
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 animate-pulse">
                     🔄 Procesando...
