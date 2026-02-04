@@ -79,6 +79,9 @@ export async function POST(
     }
 
     console.log(`📄 Procesando PDF: ${documentUrl}`);
+    console.log(`📋 documentId: ${documentId}`);
+    console.log(`📋 documentUrl: ${documentUrl}`);
+    console.log(`📋 classId: ${classId}`);
 
     // Descargar el PDF desde la URL
     const pdfResponse = await fetch(documentUrl);
@@ -178,7 +181,9 @@ export async function POST(
 
       // Marcar como procesado en MongoDB (antes de esperar embeddings)
       console.log(`📝 Marcando documento como procesado en MongoDB...`);
-      await ClassModel.findByIdAndUpdate(
+      console.log(`🔍 Buscando documento con path: ${documentUrl}`);
+      
+      const updateResult = await ClassModel.findByIdAndUpdate(
         classId,
         {
           $set: {
@@ -188,9 +193,12 @@ export async function POST(
         },
         {
           arrayFilters: [{ 'doc.path': documentUrl }],
+          new: true // Retornar el documento actualizado
         }
       );
+      
       console.log(`✅ Documento marcado como procesado`);
+      console.log(`📊 Resultado de actualización:`, updateResult?.documents?.filter((d: any) => d.path === documentUrl));
 
       // Responder inmediatamente sin esperar embeddings
       console.log(`⏳ Iniciando procesamiento de embeddings en background...`);
