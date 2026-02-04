@@ -105,7 +105,7 @@ export default function DocumentList({ classId, documents: initialDocuments }: D
       setDocuments(prevDocs => 
         prevDocs.map(d => 
           d._id === doc._id || d.name === doc.name
-            ? { ...d, processed: true, embeddings: false }
+            ? { ...d, processed: true, embeddings: true }
             : d
         )
       );
