@@ -39,6 +39,10 @@ const classSchema = new mongoose.Schema({
     default: 'days'
   },
   documents: [{
+    _id: {
+      type: mongoose.Schema.Types.ObjectId,
+      auto: true
+    },
     name: String,
     path: String,
     type: {
@@ -50,6 +54,10 @@ const classSchema = new mongoose.Schema({
     uploadedAt: {
       type: Date,
       default: Date.now
+    },
+    processed: {
+      type: Boolean,
+      default: false
     },
     embeddings: {
       type: Boolean,
