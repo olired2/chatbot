@@ -24,15 +24,16 @@ export default function DocumentList({ classId, documents: initialDocuments }: D
   const [processing, setProcessing] = useState<string | null>(null);
   const router = useRouter();
 
-  // Auto-refresh cada 5 segundos si hay documentos pendientes
+  // Auto-refresh cada 5 segundos si hay documentos pendientes (sin procesar)
   useEffect(() => {
-    const hasPendingDocs = documents.some(doc => !doc.embeddings && !doc.processed);
+    // Solo refrescar si hay documentos que aún no están marcados como procesados
+    const hasPendingDocs = documents.some(doc => !doc.processed && !doc.embeddings);
     
     if (hasPendingDocs) {
       const interval = setInterval(() => {
-        console.log('🔄 Refrescando estado de documentos...');
+        console.log('🔄 Refrescando estado de documentos pendientes...');
         router.refresh();
-      }, 5000); // Cada 5 segundos
+      }, 10000); // Cada 10 segundos (aumentado porque embeddings se procesan lentamente)
 
       return () => clearInterval(interval);
     }
@@ -111,10 +112,6 @@ export default function DocumentList({ classId, documents: initialDocuments }: D
       );
 
       alert(`✅ Documento procesado exitosamente en ${data.chunks} fragmentos`);
-      
-      // Recargar después para sincronizar con el servidor
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      router.refresh();
     } catch (error) {
       console.error('Error:', error);
       alert(`❌ ${error instanceof Error ? error.message : 'Error al procesar documento'}`);
