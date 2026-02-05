@@ -200,17 +200,66 @@ export async function POST(
       console.log(`✅ Documento marcado como procesado`);
       console.log(`📊 Resultado de actualización:`, updateResult?.documents?.filter((d: any) => d.path === documentUrl));
 
-      // Responder inmediatamente sin esperar embeddings
+      // Procesar embeddings en background (sin esperar)
       console.log(`⏳ Iniciando procesamiento de embeddings en background...`);
+      
+      // Fire and forget - procesamiento en background
+      (async () => {
+        try {
+          console.log(`🔄 Procesando embeddings en background para ${chunks.length} chunks...`);
+          
+          // Generar embeddings para cada chunk
+          const embeddingPromises = chunks.map((chunk, index) => 
+            generateEmbedding(chunk)
+              .then(embedding => ({
+                classId,
+                documentId: documentId || documentUrl,
+                chunkIndex: index,
+                content: chunk,
+                embedding
+              }))
+              .catch(err => {
+                console.error(`❌ Error generando embedding para chunk ${index}:`, err);
+                return null;
+              })
+          );
+          
+          const results = await Promise.all(embeddingPromises);
+          const successfulEmbeddings = results.filter((r): r is DocumentChunk => r !== null);
+          
+          if (successfulEmbeddings.length > 0) {
+            console.log(`✅ Generados ${successfulEmbeddings.length}/${chunks.length} embeddings`);
+            
+            // Guardar embeddings en la base de datos
+            await storeEmbeddings(successfulEmbeddings);
+            
+            // Marcar documento como completamente procesado
+            await ClassModel.findByIdAndUpdate(
+              classId,
+              {
+                $set: {
+                  'documents.$[doc].embeddings': true,
+                },
+              },
+              {
+                arrayFilters: [{ 'doc.path': documentUrl }],
+              }
+            );
+            
+            console.log(`🎉 Documento completamente procesado: ${documentUrl}`);
+          } else {
+            console.warn(`⚠️ No se pudieron generar embeddings para ${documentUrl}`);
+          }
+        } catch (error) {
+          console.error(`❌ Error en procesamiento de embeddings en background:`, error);
+        }
+      })();
       
       return NextResponse.json({
         success: true,
         message: 'Documento recibido. Procesando embeddings en background...',
         chunks: chunks.length,
       });
-      
-      // TODO: Procesar embeddings en background (queue/cron job)
-      // Por ahora se hace fire-and-forget sin esperar
     } finally {
       // Restaurar console en caso de error
       console.log = originalLog;
