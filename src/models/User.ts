@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema({
   passwordResetExpiry: {
     type: Date,
     default: undefined
+  },
+  lastActive: {
+    type: Date,
+    default: Date.now
   }
 }, {
   timestamps: true
@@ -69,6 +73,7 @@ export interface IUser {
   emailVerified: boolean;
   passwordResetToken?: string;
   passwordResetExpiry?: Date;
+  lastActive?: Date;
 }
 
 export const UserModel = mongoose.models.User || mongoose.model<IUser>('User', userSchema);

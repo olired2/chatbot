@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { ClassModel } from '@/models/Class';
 import { InteractionModel } from '@/models/Interaction';
 import connectDB from '@/lib/db/mongodb';
-import { searchDocuments } from '@/lib/ai/supabase-embeddings';
+import { searchDocuments } from '@/lib/ai/mongodb-embeddings';
 import Groq from 'groq-sdk';
 
 // Marcar como dinámico
@@ -52,6 +52,11 @@ export async function POST(
         respuesta: noDocsAnswer,
         fecha: new Date()
       });
+
+      // Actualizar lastActive del usuario
+      await import('@/models/User').then(({ UserModel }) => 
+        UserModel.findByIdAndUpdate(session.user.id, { lastActive: new Date() })
+      );
       
       return NextResponse.json({
         answer: noDocsAnswer,
@@ -108,6 +113,11 @@ Instrucciones:
       sources: searchResults.map(r => r.documentId) || [],
       fecha: new Date()
     });
+
+    // Actualizar lastActive del usuario
+    await import('@/models/User').then(({ UserModel }) => 
+      UserModel.findByIdAndUpdate(session.user.id, { lastActive: new Date() })
+    );
     
     // Return formatted response
     return NextResponse.json({ 
