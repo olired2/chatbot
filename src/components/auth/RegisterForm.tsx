@@ -10,8 +10,10 @@ export default function RegisterForm() {
     email: '',
     password: '',
     confirmPassword: '',
-    institution: ''
+    institution: '',
+    teacherCode: ''
   });
+  const [isTeacher, setIsTeacher] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -42,8 +44,9 @@ export default function RegisterForm() {
           nombre: formData.name,
           email: formData.email,
           password: formData.password,
-          rol: 'Estudiante',
-          institucion: formData.institution
+          rol: isTeacher ? 'Maestro' : 'Estudiante',
+          institucion: formData.institution,
+          teacherCode: formData.teacherCode
         }),
       });
 
@@ -143,7 +146,39 @@ export default function RegisterForm() {
           />
         </div>
 
+        {/* Checkbox Soy Maestro */}
+        <div className="flex items-center mt-4 mb-2">
+          <input
+            id="isTeacher"
+            type="checkbox"
+            className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+            checked={isTeacher}
+            onChange={(e) => setIsTeacher(e.target.checked)}
+          />
+          <label htmlFor="isTeacher" className="ml-2 block text-sm text-gray-900">
+            Soy Maestro
+          </label>
+        </div>
 
+        {/* Campo Código Secreto (Solo si es maestro) */}
+        {isTeacher && (
+          <div className="mt-2 mb-4 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+            <label htmlFor="teacherCode" className="block text-sm font-medium text-indigo-900 mb-2">
+              Código Secreto de Maestro
+            </label>
+            <input
+              id="teacherCode"
+              name="teacherCode"
+              type="password"
+              disabled={loading}
+              className="w-full px-4 py-3 bg-white border border-indigo-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+              placeholder="Ingresa el código secreto"
+              value={formData.teacherCode}
+              onChange={handleChange}
+            />
+            <p className="text-xs text-indigo-600 mt-1">Requerido para crear una cuenta de profesor</p>
+          </div>
+        )}
 
         {/* Campos de Contraseña - Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

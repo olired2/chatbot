@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { ClassModel } from '@/models/Class';
 import connectDB from '@/lib/db/mongodb';
 import { put, del } from '@vercel/blob';
+import { deleteDocumentEmbeddings } from '@/lib/ai/mongodb-embeddings';
 
 // Marcar como dinámico
 export const dynamic = 'force-dynamic';
@@ -210,6 +211,13 @@ export async function DELETE(
     } catch (fileError) {
       console.error('Error eliminando archivo de Blob Storage:', fileError);
       // Continuar aunque falle la eliminación del archivo
+    }
+
+    // Eliminar embeddings de la base de datos
+    try {
+      await deleteDocumentEmbeddings(classId, docToDelete.path || documentName);
+    } catch (embedError) {
+      console.error('Error eliminando embeddings de la BD:', embedError);
     }
 
     // Eliminar de la base de datos
