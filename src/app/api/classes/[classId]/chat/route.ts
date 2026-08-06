@@ -5,10 +5,14 @@ import { ClassModel } from '@/models/Class';
 import { InteractionModel } from '@/models/Interaction';
 import connectDB from '@/lib/db/mongodb';
 import { searchDocuments } from '@/lib/ai/supabase-embeddings';
+import { buildSystemPrompt } from '@/lib/ai/persona';
 import Groq from 'groq-sdk';
 
 // Marcar como dinámico
 export const dynamic = 'force-dynamic';
+
+// Cuántos intercambios previos se le pasan al modelo como memoria conversacional
+const HISTORY_TURNS = 6;
 
 export async function POST(
   req: Request,
@@ -59,37 +63,56 @@ export async function POST(
       });
     }
 
+    // Recuperar los últimos intercambios para que el bot tenga memoria conversacional
+    const recentInteractions = await InteractionModel.find({
+      usuario_id: session.user.id,
+      clase_id: classId
+    })
+      .sort({ fecha: -1 })
+      .limit(HISTORY_TURNS)
+      .select('pregunta respuesta')
+      .lean();
+    const history = recentInteractions.reverse();
+
     // Query documents using embeddings from Supabase
     const searchResults = await searchDocuments(classId, question, 5);
-    
-    // Preparar contexto (puede estar vacío si no hay embeddings aún)
-    const context = searchResults.length > 0 
-      ? searchResults.map(r => r.content).join('\n\n')
-      : '';
-    
+
+    // Mapear documentId -> nombre real del archivo, para que el bot pueda citar fuentes
+    const documentNameById = new Map<string, string>(
+      (classDoc.documents || []).map((doc: any) => [String(doc._id), doc.name as string])
+    );
+
+    const fragments = searchResults.map(r => ({
+      content: r.content,
+      similarity: r.similarity,
+      documentName: documentNameById.get(String(r.documentId)) || 'documento de la clase',
+    }));
+
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-    
-    const systemPrompt = `Eres un asistente educativo especializado en la clase: ${classDoc.name}
-      
-${context ? `Tienes acceso a documentos de la clase. Usa el siguiente contexto para responder preguntas de forma clara, educativa y amigable.
 
-CONTEXTO DE DOCUMENTOS:
-${context}` : `Aún no hay documentos disponibles con embeddings indexados en esta clase. Sin embargo, puedo ayudarte con preguntas generales sobre ${classDoc.name}.`}
+    // Persona especialista derivada del nombre, la descripción y el material de la clase
+    const systemPrompt = buildSystemPrompt({
+      className: classDoc.name,
+      description: classDoc.description,
+      documentNames: (classDoc.documents || []).map((doc: any) => doc.name),
+      fragments,
+    });
 
-Instrucciones:
-- Si hay documentos en el contexto y la pregunta está relacionada, usa esa información
-- Si no hay documentos o no encuentras información, explica educadamente qué no encontraste
-- Siempre sé educativo y alentador
-- Explica conceptos de forma clara y accesible`;
+    const historyMessages = history.flatMap((interaction: any) => [
+      { role: 'user' as const, content: interaction.pregunta },
+      { role: 'assistant' as const, content: interaction.respuesta }
+    ]);
 
     const message = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
-      max_tokens: 1024,
+      max_tokens: 1600,
+      temperature: 0.5,
       messages: [
         {
           role: 'system',
           content: systemPrompt
         },
+        ...historyMessages,
         {
           role: 'user',
           content: question
