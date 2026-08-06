@@ -113,7 +113,8 @@ residencia/
 │   │   └── UploadDocument.tsx           # Componente upload
 │   ├── 📂 lib/                         # Librerías y utilidades
 │   │   ├── 📂 ai/                      # Lógica de AI
-│   │   │   └── embeddings.ts           # RAG + Groq integration
+│   │   │   ├── supabase-embeddings.ts  # Embeddings + búsqueda vectorial (Supabase + Jina)
+│   │   │   └── persona.ts              # Personalidad especialista del bot por clase
 │   │   ├── 📂 db/                      # Conexiones DB
 │   │   │   ├── mongodb.ts              # Conexión MongoDB
 │   │   │   └── mongodb-adapter.ts      # Adaptador NextAuth
