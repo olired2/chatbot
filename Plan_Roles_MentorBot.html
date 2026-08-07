@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Plan de Roles y Permisos - MentorBot</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      color: #1f2937;
+      background: #fff;
+      padding: 40px 60px;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #4f46e5;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #6b7280;
+      font-size: 13px;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    .intro {
+      background: #f0f0ff;
+      border-left: 4px solid #4f46e5;
+      padding: 16px 20px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 30px;
+      font-size: 13.5px;
+      color: #374151;
+    }
+    .role-section {
+      margin-bottom: 28px;
+      page-break-inside: avoid;
+    }
+    .role-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid;
+    }
+    .role-header.admin { border-color: #dc2626; }
+    .role-header.maestro { border-color: #2563eb; }
+    .role-header.estudiante { border-color: #16a34a; }
+    .role-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .role-icon.admin { background: linear-gradient(135deg, #dc2626, #f97316); }
+    .role-icon.maestro { background: linear-gradient(135deg, #2563eb, #6366f1); }
+    .role-icon.estudiante { background: linear-gradient(135deg, #16a34a, #10b981); }
+    .role-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .role-subtitle {
+      font-size: 12px;
+      color: #6b7280;
+      font-weight: 400;
+    }
+    .role-focus {
+      font-size: 13px;
+      color: #4b5563;
+      margin-bottom: 14px;
+      padding: 10px 14px;
+      background: #f9fafb;
+      border-radius: 6px;
+    }
+    .role-focus strong { color: #1f2937; }
+    .section-label {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .section-label.permisos { color: #7c3aed; }
+    .section-label.funciones { color: #0369a1; }
+    ul {
+      padding-left: 22px;
+      margin-bottom: 14px;
+    }
+    li {
+      margin-bottom: 6px;
+      font-size: 13.5px;
+      color: #374151;
+    }
+    li strong {
+      color: #1f2937;
+    }
+    .footer {
+      margin-top: 30px;
+      padding-top: 16px;
+      border-top: 2px solid #e5e7eb;
+      text-align: center;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+    @media print {
+      body { padding: 20px 40px; }
+      .role-section { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎓 Plan de Roles y Permisos</h1>
+  <div class="subtitle">MentorBot — Plataforma Educativa Inteligente</div>
+
+  <div class="intro">
+    Este documento define estratégicamente la arquitectura de roles del sistema, estableciendo claramente las fronteras, responsabilidades y permisos de cada actor dentro de la plataforma educativa MentorBot.
+  </div>
+
+  <!-- ADMINISTRADOR -->
+  <div class="role-section">
+    <div class="role-header admin">
+      <div class="role-icon admin">🛡️</div>
+      <div>
+        <div class="role-title">1. Administrador</div>
+        <div class="role-subtitle">Gestor Global de la Plataforma</div>
+      </div>
+    </div>
+    <div class="role-focus">
+      <strong>Enfoque Principal:</strong> Mantenimiento, seguridad, escalabilidad y gestión a nivel de base de datos de la plataforma entera.
+    </div>
+    <div class="section-label permisos">🛡️ Permisos y Accesos</div>
+    <ul>
+      <li><strong>Acceso Total (Superusuario):</strong> Puede ver, modificar y eliminar cualquier registro en la base de datos (clases, usuarios, correos, registros de chat).</li>
+      <li><strong>Gestión de Roles:</strong> Es el único capaz de promover a un usuario común al rol de "Maestro" (para evitar que cualquier persona cree clases sin autorización).</li>
+      <li><strong>Supervisión del Sistema:</strong> Acceso a métricas globales de la plataforma.</li>
+    </ul>
+    <div class="section-label funciones">⚙️ Responsabilidades y Funciones Clave</div>
+    <ul>
+      <li><strong>Control de Costos y API:</strong> Monitorear el uso del Chatbot (tokens de OpenAI) para asegurar que el sistema sea rentable.</li>
+      <li><strong>Soporte Técnico:</strong> Resolver problemas de cuentas bloqueadas, correos mal escritos o eliminación de cuentas.</li>
+      <li><strong>Moderación:</strong> Eliminar clases o suspender maestros/estudiantes si se detecta un mal uso de la plataforma.</li>
+    </ul>
+  </div>
+
+  <!-- MAESTRO -->
+  <div class="role-section">
+    <div class="role-header maestro">
+      <div class="role-icon maestro">📚</div>
+      <div>
+        <div class="role-title">2. Maestro</div>
+        <div class="role-subtitle">Creador de Contenido y Facilitador</div>
+      </div>
+    </div>
+    <div class="role-focus">
+      <strong>Enfoque Principal:</strong> Gestión del aprendizaje, estructuración de la clase y seguimiento del progreso de los alumnos.
+    </div>
+    <div class="section-label permisos">🛡️ Permisos y Accesos</div>
+    <ul>
+      <li><strong>Gestión de Clases (CRUD):</strong> Permiso absoluto para Crear, Leer, Actualizar y Borrar <em>solo</em> las clases que él mismo ha creado. No tiene acceso a las clases de otros maestros.</li>
+      <li><strong>Alimentación de la IA:</strong> Único rol con permiso para subir documentos, temarios y material bibliográfico que servirán como "cerebro" para el MentorBot de su clase.</li>
+      <li><strong>Gestión de Estudiantes:</strong> Puede ver la lista de alumnos inscritos en su clase y su última fecha de conexión.</li>
+    </ul>
+    <div class="section-label funciones">⚙️ Responsabilidades y Funciones Clave</div>
+    <ul>
+      <li><strong>Contextualización de la IA:</strong> Proveer material de alta calidad para que las respuestas del bot sean precisas y académicamente correctas.</li>
+      <li><strong>Emisión de Accesos:</strong> Generar y compartir el "Código de Clase" a sus alumnos físicos o virtuales.</li>
+      <li><strong>Retención Escolar (Dashboard de Correos):</strong> Usar el panel de correos motivacionales para detectar qué estudiantes llevan más de 15 días inactivos y enviar alertas masivas o individuales para evitar la deserción.</li>
+    </ul>
+  </div>
+
+  <!-- ESTUDIANTE -->
+  <div class="role-section">
+    <div class="role-header estudiante">
+      <div class="role-icon estudiante">🎒</div>
+      <div>
+        <div class="role-title">3. Estudiante</div>
+        <div class="role-subtitle">Aprendiz y Consumidor</div>
+      </div>
+    </div>
+    <div class="role-focus">
+      <strong>Enfoque Principal:</strong> Interacción con el material didáctico, estudio activo y resolución de dudas.
+    </div>
+    <div class="section-label permisos">🛡️ Permisos y Accesos</div>
+    <ul>
+      <li><strong>Acceso Restringido:</strong> Solo puede leer e interactuar. No puede borrar, editar ni crear clases.</li>
+      <li><strong>Aislamiento de Datos:</strong> Solo puede ver las clases a las que se ha unido explícitamente mediante un código. No puede ver quiénes más están inscritos en la clase ni acceder a los datos del profesor.</li>
+      <li><strong>Interacción Controlada:</strong> Puede conversar con MentorBot, pero sus comandos de IA están confinados en un <em>Sandbox</em> (solo puede hablar sobre el temario).</li>
+    </ul>
+    <div class="section-label funciones">⚙️ Responsabilidades y Funciones Clave</div>
+    <ul>
+      <li><strong>Aprendizaje Continuo:</strong> Utilizar a MentorBot como un tutor 24/7 para aclarar dudas específicas antes de un examen o proyecto.</li>
+      <li><strong>Asistencia:</strong> Mantenerse activo en la plataforma para evitar activar los triggers (disparadores) de inactividad que alertan al profesor.</li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    MentorBot — Plataforma Educativa Inteligente &bull; Documento generado para sustentación académica
+  </div>
+
+</body>
+</html>

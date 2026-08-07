@@ -74,18 +74,18 @@ export async function POST(
     
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
     
-    const systemPrompt = `Eres un asistente educativo especializado en la clase: ${classDoc.name}
+    const systemPrompt = `Eres un asistente educativo estrictamente enfocado en la clase: ${classDoc.name}
       
-${context ? `Tienes acceso a documentos de la clase. Usa el siguiente contexto para responder preguntas de forma clara, educativa y amigable.
+${context ? `Tienes acceso a documentos de la clase. Usa EXCLUSIVAMENTE el siguiente contexto para responder preguntas de forma clara, educativa y amigable.
 
 CONTEXTO DE DOCUMENTOS:
-${context}` : `Aún no hay documentos disponibles con embeddings indexados en esta clase. Sin embargo, puedo ayudarte con preguntas generales sobre ${classDoc.name}.`}
+${context}` : `Aún no hay documentos disponibles en esta clase.`}
 
-Instrucciones:
-- Si hay documentos en el contexto y la pregunta está relacionada, usa esa información
-- Si no hay documentos o no encuentras información, explica educadamente qué no encontraste
-- Siempre sé educativo y alentador
-- Explica conceptos de forma clara y accesible`;
+Instrucciones Críticas de Seguridad (Sandboxing):
+- TU ÚNICO PROPÓSITO es responder dudas sobre el contenido de la clase "${classDoc.name}" y los documentos proporcionados.
+- SI EL ESTUDIANTE PREGUNTA SOBRE CUALQUIER TEMA FUERA DEL CONTEXTO DE LA CLASE (ej. escribir código, hacer poemas, chistes, temas no relacionados), DEBES NEGARTE CORTÉSMENTE y recordarle que solo puedes hablar sobre la clase.
+- NUNCA inventes información que no esté en el contexto. Si no lo sabes, di que no está en los documentos.
+- Sé educativo, alentador y usa un lenguaje claro.`;
 
     const message = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',

@@ -9,7 +9,7 @@ import { generateVerificationToken, sendVerificationEmail } from '@/lib/email/ve
 
 export async function POST(req: NextRequest) {
   try {
-    const { nombre, email, password, rol, institucion, codigoClase, teacherCode } = await req.json();
+    const { nombre, email, password, institucion, codigoClase } = await req.json();
 
     if (!nombre || !email || !password || !institucion) {
       return NextResponse.json(
@@ -50,17 +50,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Validar código de maestro
-    const finalRole = rol === 'Maestro' ? 'Maestro' : 'Estudiante';
-    if (finalRole === 'Maestro') {
-      const secret = process.env.TEACHER_SECRET || 'MentorBot2026';
-      if (teacherCode !== secret) {
-        return NextResponse.json(
-          { message: 'Código de maestro inválido' },
-          { status: 403 }
-        );
-      }
-    }
+    // Validar código de maestro (REMOVED)
+    // El rol por defecto siempre será 'Estudiante'
+    const finalRole = 'Estudiante';
 
     // Generar token de verificación
     const verificationToken = generateVerificationToken();

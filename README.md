@@ -1,111 +1,87 @@
-# 🤖 MentorBot - Sistema de Chat Educativo con IA
+# 🎓 MentorBot - Plataforma Educativa Inteligente
 
-Sistema educativo inteligente que permite a estudiantes interactuar con documentos de clase a través de un agente virtual con inteligencia artificial.
-
-## ✨ Características Principales
-
-- 🎓 **Gestión de Clases**: Profesores pueden crear clases y subir documentos
-- 📚 **Chat Inteligente**: IA que responde basándose en documentos de clase
-- 👥 **Roles de Usuario**: Sistema completo para maestros y estudiantes
-- 📊 **Analytics**: Reportes y estadísticas de participación
-- 📧 **Emails Automatizados**: Sistema de correos motivacionales
-- 🔐 **Autenticación Completa**: Login, registro, verificación de email, recuperación de contraseña
-
-## 🚀 Tecnologías Utilizadas
-
-- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes, MongoDB con Mongoose
-- **IA**: GROQ API (LLama 3.3), Google Generative AI, ChromaDB
-- **Autenticación**: NextAuth.js
-- **Email**: Nodemailer
-- **Procesamiento**: PDF parsing, embeddings semánticos
-
-## 🛠️ Instalación y Configuración
-
-### 1. Clonar el repositorio
-```bash
-git clone [URL_DEL_REPO]
-cd residencia
-```
-
-### 2. Instalar dependencias
-```bash
-npm install
-```
-
-### 3. Configurar variables de entorno
-Crear archivo `.env.local`:
-
-```env
-# Base Configuration
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=tu_secreto_super_seguro_de_32_caracteres_minimo
-
-# Database
-MONGODB_URI=mongodb://localhost:27017/mentorbot
-
-# AI Services
-GROQ_API_KEY=tu_groq_api_key
-
-# Email Configuration
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=tu_email@gmail.com
-SMTP_PASS=tu_app_password
-```
-
-### 4. Ejecutar el proyecto
-```bash
-npm run dev
-```
-
-El proyecto estará disponible en `http://localhost:3000`
-
-## 🎯 Funcionalidades por Rol
-
-### 👨‍🏫 Maestro
-- Crear y gestionar clases
-- Subir documentos (PDF)
-- Ver analytics de participación
-- Generar reportes
-- Gestionar correos motivacionales
-
-### 🎓 Estudiante  
-- Unirse a clases con código
-- Chat inteligente con documentos
-- Ver clases disponibles
-- Recibir correos motivacionales
-
-## 🔒 Características de Seguridad
-
-- Autenticación completa con NextAuth.js
-- Verificación de email obligatoria
-- Tokens seguros para reset de contraseña
-- Validación de roles y permisos
-- Protección de endpoints de API
-
-## 📊 Sistema de IA
-
-- **Embeddings Semánticos**: Procesamiento inteligente de documentos
-- **ChromaDB**: Base de datos vectorial para búsquedas semánticas
-- **GROQ API**: Generación de respuestas con LLama 3.3
-- **Análisis Contextual**: IA adaptativa según la materia y documentos
-
-## 🚀 Deploy
-
-### Vercel (Recomendado)
-1. Conecta tu repositorio en Vercel
-2. Configura las variables de entorno
-3. Deploy automático
-
-## 🤝 Contribución
-
-1. Fork el proyecto
-2. Crea una rama para tu feature
-3. Commit tus cambios
-4. Push a la rama
-5. Abre un Pull Request
+MentorBot es una plataforma de educación digital (SaaS) potenciada por Inteligencia Artificial, diseñada para asistir a maestros y alumnos mediante un entorno de aprendizaje altamente interactivo. El núcleo del sistema es un asistente virtual impulsado por Modelos de Lenguaje Grande (LLM) que funciona bajo el paradigma **RAG (Retrieval-Augmented Generation)**, garantizando que el bot ofrezca tutorías estrictamente basadas en el temario del profesor.
 
 ---
 
-**Desarrollado con ❤️ para la educación**
+## 🚀 Arquitectura y Stack Tecnológico
+
+El proyecto está construido bajo una arquitectura moderna, orientada a la escalabilidad y al rendimiento en tiempo real:
+* **Frontend / Framework Core:** Next.js 14 (React) con App Router.
+* **Backend:** Next.js API Routes (Serverless Functions).
+* **Base de Datos:** MongoDB (NoSQL) con Mongoose para esquematización y validación.
+* **Autenticación:** NextAuth.js con manejo de credenciales propias, cifrado de contraseñas con `bcryptjs` y protección CSRF.
+* **Motor de IA:** OpenAI API integrado con LangChain (Arquitectura RAG para análisis de PDFs y documentos vectoriales).
+* **Servicio de Correos (SMTP):** Nodemailer automatizado.
+* **Estilos:** Tailwind CSS.
+
+---
+
+## 🔑 Características Principales
+
+### 1. Sistema RAG de Chatbot "Sandboxed" (Acorralado)
+A diferencia de un LLM generalista, MentorBot incluye un sistema estricto de restricciones sistémicas (System Prompts). La IA tiene terminantemente prohibido contestar preguntas que no pertenezcan al contexto de los documentos proporcionados por el maestro. Si un estudiante intenta desviar la conversación, la IA lo redirige amablemente al enfoque académico.
+
+### 2. Gestión de Deserción Escolar (Correos Automatizados)
+El sistema cuenta con un algoritmo que escanea la base de datos de actividad de los estudiantes.
+* **Regla de Negocio:** Todo estudiante con inactividad igual o mayor a 15 días es agrupado en el "Panel de Prevención".
+* **Acción:** El maestro cuenta con una interfaz gráfica para enviar notificaciones masivas de motivación ("Nudges") con un solo clic. El historial de envíos queda registrado en la base de datos con su respectivo estado.
+
+### 3. Códigos de Clase Unívocos
+Los maestros crean contenedores virtuales (Clases) que generan un ID de vinculación criptográfico. Los estudiantes se registran de manera aislada y utilizan estos códigos para tener acceso a los materiales y al asistente de su respectiva clase, manteniendo los datos segregados.
+
+### 4. Seguridad y Recuperación de Accesos
+* Múltiples rondas de hashing salado (`bcryptjs`) protegiendo las contraseñas en la base de datos.
+* Recuperación de contraseñas mediante Tokens criptográficos perecederos (1 hora de validez) enviados vía SMTP.
+
+---
+
+## 👤 Matriz de Control de Acceso Basado en Roles (RBAC)
+
+La plataforma distingue estrictamente 3 roles operativos:
+
+1. **Administrador (Mantenimiento Global)**
+   * Gestiona el backend y la base de datos a un nivel técnico.
+   * Monitorea el flujo de consumo de la API de Inteligencia Artificial para el control de costos.
+   * Audita la integridad de la base de datos y provee accesos o resoluciones manuales en caso de contingencia.
+
+2. **Maestro (Creador de Contexto)**
+   * Permisos tipo CRUD (Create, Read, Update, Delete) limitados exclusivamente al contexto de las clases de las que es propietario.
+   * Responsable de alimentar el vector de conocimiento de la Inteligencia Artificial mediante subida de archivos de texto o PDFs.
+   * Cuenta con un panel exclusivo de métricas para la detección temprana de alumnos inactivos.
+
+3. **Estudiante (Consumidor del Contexto)**
+   * Su rol está limitado al modo lectura e interacción con el Chatbot.
+   * Entorno completamente asilado: un estudiante no tiene forma sistémica de saber qué otros estudiantes están en su clase.
+   * Toda su actividad genera telemetría para las estadísticas del maestro (cálculo de inactividad).
+
+---
+
+## 🛠️ Instalación y Configuración para Desarrollo
+
+Si deseas ejecutar este proyecto en tu entorno local, sigue las siguientes instrucciones:
+
+### 1. Prerrequisitos
+* Node.js v18 o superior.
+* Instancia de MongoDB ejecutándose en el puerto 27017 (o URL remota de MongoDB Atlas).
+
+### 2. Variables de Entorno
+Clonar el archivo `.env.example` (si aplica) a `.env` e incluir:
+\`\`\`env
+MONGODB_URI=mongodb://localhost:27017/mentorbot
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=<tu_secreto_generado>
+OPENAI_API_KEY=<tu_clave_de_openai>
+SMTP_USER=<correo_sistema>
+SMTP_PASS=<password_aplicacion>
+\`\`\`
+
+### 3. Puesta en Marcha
+\`\`\`bash
+# Instalar dependencias
+npm install
+
+# Correr el entorno de desarrollo
+npm run dev
+\`\`\`
+El proyecto estará disponible en el puerto indicado por la terminal (usualmente \`http://localhost:3000\`).
