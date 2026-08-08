@@ -2,7 +2,7 @@
 
 ## 📋 Resumen Ejecutivo
 
-Sistema educativo basado en **Next.js 16** con **RAG (Retrieval Augmented Generation)** que permite a profesores crear clases, subir documentos PDF y a estudiantes interactuar con un agente virtual inteligente alimentado por **Groq AI**.
+Sistema educativo basado en **Next.js 16** con **Generación Aumentada por Recuperación (RAG)** que permite a profesores crear clases, subir documentos PDF y a estudiantes interactuar con un agente virtual inteligente alimentado por **Groq AI**.
 
 ---
 
@@ -11,33 +11,33 @@ Sistema educativo basado en **Next.js 16** con **RAG (Retrieval Augmented Genera
 ```mermaid
 graph TB
     subgraph "Cliente (Navegador)"
-        UI[React Components]
-        Forms[Auth Forms]
-        Chat[Chat Interface]
+        UI[Componentes React]
+        Forms[Formularios de Autenticación]
+        Chat[Interfaz de Chat]
     end
     
-    subgraph "Next.js 16 App Router"
-        Pages[Pages/Routes]
-        API[API Routes]
+    subgraph "Enrutador de Aplicación Next.js 16"
+        Pages[Páginas/Rutas]
+        API[Rutas API]
         Middleware[Middleware]
     end
     
     subgraph "Autenticación"
         NextAuth[NextAuth v4.24.11]
-        JWT[JWT Tokens]
-        Session[Server Sessions]
+        JWT[Tokens JWT]
+        Session[Sesiones de Servidor]
     end
     
     subgraph "Base de Datos"
         MongoDB[(MongoDB Atlas)]
-        Models[Mongoose Models]
+        Models[Modelos Mongoose]
     end
     
-    subgraph "AI & Procesamiento"
-        Groq[Groq AI API]
-        PDF[PDF Processing]
+    subgraph "IA & Procesamiento"
+        Groq[API Groq AI]
+        PDF[Procesamiento de PDF]
         Embeddings[Embeddings/RAG]
-        ChromaDB[ChromaDB Files]
+        ChromaDB[Archivos ChromaDB]
     end
     
     UI --> Pages
@@ -56,23 +56,23 @@ graph TB
 ## 🛠️ Stack Tecnológico
 
 ### **Frontend**
-- **Framework**: Next.js 16.0.0 (App Router + Turbopack)
-- **React**: 19.2.0 con Server Components + Client Components
-- **Styling**: Tailwind CSS 4.x
+- **Framework**: Next.js 16.0.0 (Enrutador de Aplicación + Turbopack)
+- **React**: 19.2.0 con Componentes de Servidor + Componentes de Cliente
+- **Estilos**: Tailwind CSS 4.x
 - **TypeScript**: v5 con tipado estricto
-- **Forms**: React Hook Form v7.65.0
+- **Formularios**: React Hook Form v7.65.0
 
 ### **Backend & API**
-- **Runtime**: Node.js con Next.js API Routes
-- **Autenticación**: NextAuth v4.24.11 (JWT Strategy)
+- **Entorno de Ejecución**: Node.js con Rutas API de Next.js
+- **Autenticación**: NextAuth v4.24.11 (Estrategia JWT)
 - **Base de Datos**: MongoDB Atlas + Mongoose 8.19.2
 - **Validación**: Zod v4.1.12
 
-### **AI & Procesamiento**
-- **LLM**: Groq API (Llama 3.3 70B Versatile)
-- **PDF Processing**: pdf2json v4.0.0
-- **RAG**: Custom embeddings + ChromaDB files
-- **Vector Storage**: JSON files en sistema de archivos
+### **IA & Procesamiento**
+- **LLM**: API Groq (Llama 3.3 70B Versatile)
+- **Procesamiento de PDF**: pdf2json v4.0.0
+- **RAG**: Embeddings personalizados + Archivos ChromaDB
+- **Almacenamiento Vectorial**: Archivos JSON en el sistema de archivos
 
 ---
 
@@ -81,71 +81,70 @@ graph TB
 ```
 residencia/
 ├── 📂 src/
-│   ├── 📂 app/                          # App Router de Next.js 16
-│   │   ├── 📂 api/                      # API Routes
-│   │   │   ├── 📂 auth/                 # NextAuth endpoints
-│   │   │   │   ├── 📂 [...nextauth]/    # NextAuth handler
+│   ├── 📂 app/                          # Enrutador de Aplicación Next.js 16
+│   │   ├── 📂 api/                      # Rutas API
+│   │   │   ├── 📂 auth/                 # Endpoints NextAuth
+│   │   │   │   ├── 📂 [...nextauth]/    # Manejador NextAuth
 │   │   │   │   └── 📂 register/         # Registro de usuarios
 │   │   │   ├── 📂 classes/              # API de clases
 │   │   │   │   ├── 📂 [classId]/        # APIs específicas por clase
 │   │   │   │   │   ├── 📂 chat/         # Endpoint del agente virtual
 │   │   │   │   │   │   └── 📂 history/  # Historial de chat
 │   │   │   │   │   └── 📂 documents/    # Gestión de documentos
-│   │   │   │   └── route.ts             # CRUD de clases
-
+│   │   │   │   └── route.ts             # Crear/Leer/Actualizar/Borrar de clases
 │   │   ├── 📂 auth/                     # Páginas de autenticación
 │   │   │   ├── 📂 login/
 │   │   │   └── 📂 register/
-│   │   ├── 📂 dashboard/                # Dashboard principal
+│   │   ├── 📂 dashboard/                # Panel principal
 │   │   │   ├── 📂 classes/              # Gestión de clases
 │   │   │   │   └── 📂 [classId]/        # Vista específica de clase
 │   │   │   └── 📂 chat/                 # Vista de chat para estudiantes
-│   │   ├── layout.tsx                   # Layout raíz
-│   │   ├── page.tsx                     # Página de inicio (redirect)
+│   │   ├── layout.tsx                   # Diseño raíz
+│   │   ├── page.tsx                     # Página de inicio (redirección)
 │   │   └── globals.css                  # Estilos globales
 │   ├── 📂 components/                   # Componentes React
 │   │   ├── 📂 auth/                     # Formularios de autenticación
-│   │   ├── 📂 layouts/                  # Layouts reutilizables
-│   │   ├── AgenteVirtual.tsx           # Interfaz de chat principal
+│   │   ├── 📂 layouts/                  # Diseños reutilizables
+│   │   ├── AgenteVirtual.tsx            # Interfaz de chat principal
 │   │   ├── ClassesClient.tsx            # Lista de clases
 │   │   ├── CreateClassModal.tsx         # Modal crear clase
 │   │   ├── DocumentList.tsx             # Lista de documentos
-│   │   └── UploadDocument.tsx           # Componente upload
-│   ├── 📂 lib/                         # Librerías y utilidades
-│   │   ├── 📂 ai/                      # Lógica de AI
-│   │   │   └── embeddings.ts           # RAG + Groq integration
-│   │   ├── 📂 db/                      # Conexiones DB
-│   │   │   ├── mongodb.ts              # Conexión MongoDB
-│   │   │   └── mongodb-adapter.ts      # Adaptador NextAuth
-│   │   └── 📂 utils/                   # Utilidades generales
-│   ├── 📂 models/                      # Modelos Mongoose
-│   │   ├── User.ts                     # Modelo Usuario
-│   │   ├── Class.ts                    # Modelo Clase  
-│   │   └── Interaction.ts              # Modelo Interacciones
-│   └── 📂 types/                       # Tipos TypeScript
-│       ├── next-auth.d.ts              # Tipos NextAuth
-│       └── mongodb.ts                  # Tipos MongoDB
-
-├── 📂 chroma_db/                       # Almacén de embeddings
-│   └── 📂 [classId]/                   # Embeddings por clase
-│       └── *.json                      # Fragmentos de documentos
-├── 📂 uploads/                         # Archivos subidos
-│   └── 📂 [classId]/                   # Archivos por clase
-│       └── *.pdf                       # Documentos PDF
-├── 📂 scripts/                         # Scripts de utilidad
-├── package.json                        # Dependencias del proyecto
-├── next.config.ts                      # Configuración Next.js
-├── tsconfig.json                       # Configuración TypeScript  
-├── tailwind.config.js                  # Configuración Tailwind
-├── middleware.ts                       # Middleware Next.js
-└── .env.local                          # Variables de entorno
+│   │   └── UploadDocument.tsx           # Componente de subida
+│   ├── 📂 lib/                          # Librerías y utilidades
+│   │   ├── 📂 ai/                       # Lógica de IA
+│   │   │   └── embeddings.ts            # Integración RAG + Groq
+│   │   ├── 📂 db/                       # Conexiones BD
+│   │   │   ├── mongodb.ts               # Conexión MongoDB
+│   │   │   └── mongodb-adapter.ts       # Adaptador NextAuth
+│   │   └── 📂 utils/                    # Utilidades generales
+│   ├── 📂 models/                       # Modelos Mongoose
+│   │   ├── User.ts                      # Modelo Usuario
+│   │   ├── Class.ts                     # Modelo Clase  
+│   │   └── Interaction.ts               # Modelo Interacciones
+│   └── 📂 types/                        # Tipos TypeScript
+│       ├── next-auth.d.ts               # Tipos NextAuth
+│       └── mongodb.ts                   # Tipos MongoDB
+│
+├── 📂 chroma_db/                        # Almacén de embeddings
+│   └── 📂 [classId]/                    # Embeddings por clase
+│       └── *.json                       # Fragmentos de documentos
+├── 📂 uploads/                          # Archivos subidos
+│   └── 📂 [classId]/                    # Archivos por clase
+│       └── *.pdf                        # Documentos PDF
+├── 📂 scripts/                          # Scripts de utilidad
+├── package.json                         # Dependencias del proyecto
+├── next.config.ts                       # Configuración Next.js
+├── tsconfig.json                        # Configuración TypeScript  
+├── tailwind.config.js                   # Configuración Tailwind
+├── middleware.ts                        # Middleware Next.js
+└── .env.local                           # Variables de entorno
 ```
 
 ---
 
 ## 🔐 Sistema de Autenticación
 
-### **NextAuth v4.24.11 Configuration**
+### **Configuración de NextAuth v4.24.11**
 
 ```typescript
 // Estrategia JWT con credenciales personalizadas
@@ -205,7 +204,7 @@ interface User {
 
 **Estudiante**:
 - ✅ Registrarse en clases con código
-- ✅ Chatear con AI usando documentos
+- ✅ Chatear con IA usando documentos
 - ✅ Ver historial de conversaciones
 - ✅ Acceder solo a sus clases asignadas
 
@@ -213,7 +212,7 @@ interface User {
 
 ## 🗄️ Modelos de Base de Datos
 
-### **User Model**
+### **Modelo de Usuario (User)**
 ```typescript
 interface IUser {
   _id: ObjectId;
@@ -227,14 +226,14 @@ interface IUser {
 }
 ```
 
-### **Class Model**
+### **Modelo de Clase (Class)**
 ```typescript
 interface IClass {
   _id: ObjectId;
   name: string;             // Nombre de la clase
   code: string;             // Código único de 6 caracteres
-  teacher: ObjectId;        // Ref a User (Maestro)
-  students: ObjectId[];     // Array de refs a Users (Estudiantes)
+  teacher: ObjectId;        // Referencia a User (Maestro)
+  students: ObjectId[];     // Arreglo de referencias a Users (Estudiantes)
   documents: {              // Documentos PDF subidos
     filename: string;
     originalName: string;
@@ -244,64 +243,64 @@ interface IClass {
 }
 ```
 
-### **Interaction Model**
+### **Modelo de Interacción (Interaction)**
 ```typescript
 interface IInteraction {
   _id: ObjectId;
-  usuario_id: ObjectId;     // Ref a User (Estudiante)
-  clase_id: ObjectId;       // Ref a Class
+  usuario_id: ObjectId;     // Referencia a User (Estudiante)
+  clase_id: ObjectId;       // Referencia a Class
   pregunta: string;         // Pregunta del estudiante
-  respuesta: string;        // Respuesta de la AI
+  respuesta: string;        // Respuesta de la IA
   sources: string[];        // Fragmentos de documentos usados
-  fecha: Date;              // Timestamp de la interacción
+  fecha: Date;              // Marca de tiempo de la interacción
 }
 
-// Indexes para optimización
+// Índices para optimización
 // - (usuario_id, fecha): Historial por usuario
 // - (clase_id, fecha): Actividad por clase
 ```
 
 ---
 
-## 🤖 Sistema de AI y RAG
+## 🤖 Sistema de IA y RAG
 
 ### **Flujo de Procesamiento de Documentos**
 
 ```mermaid
 sequenceDiagram
-    participant T as Teacher
-    participant API as Upload API
+    participant M as Maestro
+    participant API as API de Subida
     participant PDF as pdf2json
-    participant FS as File System
+    participant FS as Sistema de Archivos
     participant DB as MongoDB
     
-    T->>API: Upload PDF
-    API->>PDF: Process PDF
-    PDF->>PDF: Extract text
-    PDF->>PDF: Split into chunks (1000 chars)
-    PDF->>FS: Save to chroma_db/[classId]/
-    API->>DB: Update Class.documents[]
-    API->>T: Success response
+    M->>API: Subir PDF
+    API->>PDF: Procesar PDF
+    PDF->>PDF: Extraer texto
+    PDF->>PDF: Dividir en fragmentos (1000 caracteres)
+    PDF->>FS: Guardar en chroma_db/[classId]/
+    API->>DB: Actualizar Class.documents[]
+    API->>M: Respuesta de éxito
 ```
 
 ### **Flujo de Consulta (RAG)**
 
 ```mermaid
 sequenceDiagram
-    participant S as Student
-    participant API as Chat API
-    participant FS as File System
+    participant E as Estudiante
+    participant API as API de Chat
+    participant FS as Sistema de Archivos
     participant Groq as Groq AI
     participant DB as MongoDB
     
-    S->>API: Send question
-    API->>FS: Load class documents
-    FS->>API: Return document chunks
-    API->>API: Select top 5 relevant chunks
-    API->>Groq: Send context + question
-    Groq->>API: Return AI answer
-    API->>DB: Save interaction
-    API->>S: Return answer + sources
+    E->>API: Enviar pregunta
+    API->>FS: Cargar documentos de clase
+    FS->>API: Retornar fragmentos de documento
+    API->>API: Seleccionar 5 fragmentos más relevantes
+    API->>Groq: Enviar contexto + pregunta
+    Groq->>API: Retornar respuesta de la IA
+    API->>DB: Guardar interacción
+    API->>E: Retornar respuesta + fuentes
 ```
 
 ### **Configuración Groq AI**
@@ -312,7 +311,7 @@ const groqConfig = {
   model: 'llama-3.3-70b-versatile',
   temperature: 0.7,           // Balance creatividad/precisión
   max_tokens: 1024,           // Respuestas concisas
-  stream: false               // Response completa
+  stream: false               // Respuesta completa
 };
 
 // Prompt del sistema
@@ -331,7 +330,7 @@ Si la pregunta no está relacionada con el tema, redirige amablemente.
 {
   "documents": [
     {
-      "pageContent": "Fragmento de texto del PDF (1000 chars max)",
+      "pageContent": "Fragmento de texto del PDF (máximo 1000 caracteres)",
       "metadata": {
         "source": "nombre_documento.pdf",
         "chunk": 1
@@ -343,12 +342,12 @@ Si la pregunta no está relacionada con el tema, redirige amablemente.
 
 ---
 
-## 🛣️ API Routes y Endpoints
+## 🛣️ Rutas API y Endpoints
 
 ### **Autenticación**
 - `POST /api/auth/register` - Registro de usuarios
-- `POST /api/auth/[...nextauth]` - NextAuth handlers (login/logout)
-- `GET /api/auth/csrf` - CSRF token para formularios
+- `POST /api/auth/[...nextauth]` - Manejadores NextAuth (iniciar sesión/cerrar sesión)
+- `GET /api/auth/csrf` - Token CSRF para formularios
 
 ### **Gestión de Clases**
 - `POST /api/classes` - Crear nueva clase (Maestro)
@@ -364,38 +363,36 @@ Si la pregunta no está relacionada con el tema, redirige amablemente.
 - `POST /api/classes/[classId]/chat` - Enviar pregunta al agente virtual
 - `GET /api/classes/[classId]/chat/history` - Obtener historial
 
-
-
 ---
 
 ## 🎨 Componentes Frontend
 
-### **Jerarquía de Layouts**
+### **Jerarquía de Diseños (Layouts)**
 
 ```
-app/layout.tsx (Root Layout)
-├── SessionProvider (NextAuth context)
+app/layout.tsx (Diseño Raíz)
+├── SessionProvider (Contexto NextAuth)
 ├── globals.css (Tailwind)
-└── dashboard/layout.tsx (Protected Layout)
-    ├── getServerSession() (Auth check)
-    ├── DashboardLayout component
-    │   ├── Navigation sidebar
-    │   ├── User menu
-    │   └── {children} content
-    └── Specific page components
+└── dashboard/layout.tsx (Diseño Protegido)
+    ├── getServerSession() (Verificación de autenticación)
+    ├── Componente DashboardLayout
+    │   ├── Barra lateral de navegación
+    │   ├── Menú de usuario
+    │   └── contenido {children}
+    └── Componentes de página específicos
 ```
 
 ### **Componentes Principales**
 
 **🤖 AgenteVirtual.tsx** (Cliente)
 ```typescript
-// Features implementadas:
-- ✅ Real-time messaging interface
-- ✅ Auto-scroll to latest message  
-- ✅ Loading states and error handling
-- ✅ Chat history loading on mount
-- ✅ Reload button for history refresh
-- ✅ useEffect + useRef hooks para UX
+// Características implementadas:
+- ✅ Interfaz de mensajería en tiempo real
+- ✅ Desplazamiento automático al último mensaje  
+- ✅ Estados de carga y manejo de errores
+- ✅ Carga de historial de chat al inicio
+- ✅ Botón de recarga para actualizar el historial
+- ✅ Ganchos (hooks) useEffect + useRef para experiencia de usuario (UX)
 
 // Estado del componente:
 const [messages, setMessages] = useState<Message[]>([]);
@@ -418,10 +415,10 @@ const messagesEndRef = useRef<HTMLDivElement>(null);
 - Estados de carga y error
 
 **📤 UploadDocument.tsx** (Subida de Archivos)
-- Drag & drop interface
+- Interfaz de arrastrar y soltar (drag & drop)
 - Validación de tipo PDF
-- Progress indicator
-- Error handling para archivos malformados
+- Indicador de progreso
+- Manejo de errores para archivos malformados
 
 ---
 
@@ -434,50 +431,50 @@ sequenceDiagram
     participant M as Maestro
     participant Auth as NextAuth
     participant DB as MongoDB
-    participant FS as File System
+    participant FS as Sistema de Archivos
     
-    M->>Auth: Login (email/password)
-    Auth->>DB: Validate credentials
-    DB->>Auth: Return user data
-    Auth->>M: Redirect to /dashboard/classes
+    M->>Auth: Iniciar sesión (email/contraseña)
+    Auth->>DB: Validar credenciales
+    DB->>Auth: Retornar datos de usuario
+    Auth->>M: Redirigir a /dashboard/classes
     
-    M->>DB: Create new class
-    DB->>M: Return class with unique code
+    M->>DB: Crear nueva clase
+    DB->>M: Retornar clase con código único
     
-    M->>FS: Upload PDF document
-    FS->>FS: Process with pdf2json
-    FS->>DB: Update class.documents[]
+    M->>FS: Subir documento PDF
+    FS->>FS: Procesar con pdf2json
+    FS->>DB: Actualizar class.documents[]
     
-    M->>DB: View student progress
-    DB->>M: Return interactions summary
+    M->>DB: Ver progreso del estudiante
+    DB->>M: Retornar resumen de interacciones
 ```
 
 ### **Flujo Estudiante**
 
 ```mermaid
 sequenceDiagram
-    participant S as Estudiante
+    participant E as Estudiante
     participant Auth as NextAuth
-    participant API as Chat API
+    participant API as API de Chat
     participant Groq as Groq AI
     participant DB as MongoDB
     
-    S->>Auth: Register with class code
-    Auth->>DB: Create user + add to class.students[]
+    E->>Auth: Registrarse con código de clase
+    Auth->>DB: Crear usuario + añadir a class.students[]
     
-    S->>Auth: Login
-    Auth->>S: Redirect to /dashboard/chat
+    E->>Auth: Iniciar sesión
+    Auth->>E: Redirigir a /dashboard/chat
     
-    S->>API: Send question to agente virtual
-    API->>API: Load document chunks (RAG)
-    API->>Groq: Query with context
-    Groq->>API: Return AI response
-    API->>DB: Save interaction
-    API->>S: Display answer + sources
+    E->>API: Enviar pregunta a agente virtual
+    API->>API: Cargar fragmentos de documento (RAG)
+    API->>Groq: Consultar con contexto
+    Groq->>API: Retornar respuesta de IA
+    API->>DB: Guardar interacción
+    API->>E: Mostrar respuesta + fuentes
     
-    S->>API: Load chat history
-    API->>DB: Query interactions by user+class
-    API->>S: Display conversation history
+    E->>API: Cargar historial de chat
+    API->>DB: Consultar interacciones por usuario+clase
+    API->>E: Mostrar historial de conversación
 ```
 
 ---
@@ -493,10 +490,10 @@ NEXTAUTH_SECRET=REDACTED_NEXTAUTH_SECRET
 MONGODB_URI=mongodb+srv://user:pass@cluster0.vqye7ir.mongodb.net/chatbot
 MONGO_DBNAME=chatbot
 
-# Groq AI (WORKING)
+# Groq AI (FUNCIONANDO)
 GROQ_API_KEY=REDACTED_GROQ_API_KEY
 
-# Google AI (BACKUP - no funciona)
+# Google AI (RESPALDO - no funciona)
 GOOGLE_API_KEY=REDACTED_GOOGLE_API_KEY
 ```
 
@@ -519,21 +516,21 @@ GOOGLE_API_KEY=REDACTED_GOOGLE_API_KEY
 - Alertas de inactividad (+15 días)
 
 **Por Sistema:**
-- Tiempo de respuesta de Groq API
-- Tasa de éxito de procesamiento PDF
+- Tiempo de respuesta de API Groq
+- Tasa de éxito de procesamiento de PDF
 - Errores de autenticación
 - Uso de almacenamiento (uploads/ y chroma_db/)
 
-### **Dashboard del Maestro**
+### **Panel del Maestro**
 
 ```typescript
 // Información mostrada en /dashboard/classes/[classId]
 interface ClassStats {
-  totalStudents: number;
+  totalStudents: number;            // Total de estudiantes
   activeStudents: number;           // Activos en últimos 15 días
   inactiveStudents: number;         // Sin actividad >15 días
-  totalInteractions: number;
-  documentsCount: number;
+  totalInteractions: number;        // Interacciones totales
+  documentsCount: number;           // Cantidad de documentos
   recentActivity: Interaction[];    // Últimas 10 interacciones
 }
 ```
@@ -545,29 +542,29 @@ interface ClassStats {
 ### **Estados de la Aplicación**
 
 **Autenticación:**
-- ✅ Authenticated (con rol y permisos)
-- ❌ Unauthenticated (redirect a /auth/login)
-- ⏳ Loading (verificando sesión)
+- ✅ Autenticado (con rol y permisos)
+- ❌ No autenticado (redirección a /auth/login)
+- ⏳ Cargando (verificando sesión)
 
 **Documentos:**
-- ✅ Processed (fragmentado y guardado)
-- ⚠️ Processing (pdf2json en progreso)
-- ❌ Failed (error en procesamiento)
+- ✅ Procesado (fragmentado y guardado)
+- ⚠️ Procesando (pdf2json en progreso)
+- ❌ Fallido (error en procesamiento)
 
 **Chat:**
-- ✅ Ready (documentos disponibles)
-- ⚠️ No Documents (clase sin materiales)
-- ❌ API Error (Groq no disponible)
+- ✅ Listo (documentos disponibles)
+- ⚠️ Sin Documentos (clase sin materiales)
+- ❌ Error de API (Groq no disponible)
 
 ### **Manejo de Errores**
 
 ```typescript
-// Estrategia de fallback en queryDocuments()
+// Estrategia de respaldo en queryDocuments()
 try {
   const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions');
   return groqResponse.json();
 } catch (embeddingError) {
-  // Fallback a respuesta predeterminada
+  // Respaldo a respuesta predeterminada
   return {
     answer: 'Lo siento, hay problemas técnicos. Los documentos están siendo procesados.',
     sources: []
@@ -579,63 +576,63 @@ try {
 
 | Error | Causa | Solución |
 |-------|--------|----------|
-| `401 Unauthorized` | Sesión expirada | Re-login automático |
-| `404 Class Not Found` | ID inválido o sin permisos | Verificar acceso |
-| `PDF Processing Failed` | Archivo malformado | Try-catch con decodeURIComponent |
-| `Groq API Timeout` | Red lenta | Retry con exponential backoff |
-| `MongoDB Connection` | DB no disponible | Reconnection pool |
+| `401 No Autorizado` | Sesión expirada | Re-inicio de sesión automático |
+| `404 Clase No Encontrada` | ID inválido o sin permisos | Verificar acceso |
+| `Fallo Procesamiento de PDF` | Archivo malformado | Try-catch con decodeURIComponent |
+| `Tiempo de Espera de API Groq`| Red lenta | Reintentar con retroceso exponencial |
+| `Conexión MongoDB` | BD no disponible | Pool de reconexión |
 
 ---
 
 ## 🔒 Seguridad Implementada
 
 ### **Autenticación y Autorización**
-- ✅ **Password hashing**: bcrypt con salt rounds
-- ✅ **JWT Tokens**: Firmados con NEXTAUTH_SECRET
-- ✅ **Role-based access**: Middleware por rutas
-- ✅ **Session validation**: getServerSession() en cada API
-- ✅ **CSRF Protection**: NextAuth built-in
+- ✅ **Hashing de contraseñas**: bcrypt con salt rounds
+- ✅ **Tokens JWT**: Firmados con NEXTAUTH_SECRET
+- ✅ **Acceso basado en roles**: Middleware por rutas
+- ✅ **Validación de sesión**: getServerSession() en cada API
+- ✅ **Protección CSRF**: Integrado en NextAuth
 
 ### **Validación de Datos**
-- ✅ **Schema validation**: Zod para request bodies
-- ✅ **File type checking**: Solo PDFs permitidos
-- ✅ **Size limits**: 10MB máximo por archivo
-- ✅ **Path sanitization**: Prevenir directory traversal
+- ✅ **Validación de esquema**: Zod para cuerpos de solicitud
+- ✅ **Verificación de tipo de archivo**: Solo PDFs permitidos
+- ✅ **Límites de tamaño**: 10MB máximo por archivo
+- ✅ **Sanitización de rutas**: Prevenir salto de directorios (directory traversal)
 
-### **API Security**
-- ✅ **Rate limiting**: Control de frecuencia de requests
-- ✅ **CORS headers**: Configurado en next.config.ts
-- ✅ **Environment variables**: Secrets en .env.local
-- ✅ **Error sanitization**: No exposer stack traces
+### **Seguridad de API**
+- ✅ **Límite de tasa**: Control de frecuencia de solicitudes
+- ✅ **Cabeceras CORS**: Configurado en next.config.ts
+- ✅ **Variables de entorno**: Secretos en .env.local
+- ✅ **Sanitización de errores**: No exponer rastros de pila (stack traces)
 
 ---
 
 ## 🎯 Próximas Mejoras Identificadas
 
-### **Performance**
-- [ ] Implementar Redis para caching de embeddings
-- [ ] Lazy loading de componentes grandes
-- [ ] Optimización de queries MongoDB con agregación
+### **Rendimiento**
+- [ ] Implementar Redis para caché de embeddings
+- [ ] Carga diferida (lazy loading) de componentes grandes
+- [ ] Optimización de consultas MongoDB con agregación
 - [ ] CDN para archivos estáticos
 
-### **Features**
+### **Características**
 - [ ] Notificaciones push para nuevos documentos
-- [ ] Sistema de tags para documentos
-- [ ] Analytics dashboard avanzado
-- [ ] Export de conversaciones a PDF
-- [ ] Modo offline con Service Workers
+- [ ] Sistema de etiquetas para documentos
+- [ ] Panel de analíticas avanzado
+- [ ] Exportación de conversaciones a PDF
+- [ ] Modo sin conexión con Service Workers
 
-### **AI Enhancements**
-- [ ] Fine-tuning del modelo con conversaciones históricas
-- [ ] Embeddings vectoriales reales (vs. simple text matching)
-- [ ] Multi-modal support (imágenes en PDFs)
+### **Mejoras de IA**
+- [ ] Ajuste fino (fine-tuning) del modelo con conversaciones históricas
+- [ ] Embeddings vectoriales reales (vs. simple coincidencia de texto)
+- [ ] Soporte multimodal (imágenes en PDFs)
 - [ ] Respuestas con citas directas y páginas
 
-### **Developer Experience**
-- [ ] Docker containerization
-- [ ] CI/CD pipeline con GitHub Actions
+### **Experiencia del Desarrollador**
+- [ ] Contenerización con Docker
+- [ ] Tubería (Pipeline) CI/CD con GitHub Actions
 - [ ] Storybook para componentes
-- [ ] Monitoreo de performance con métricas
+- [ ] Monitoreo de rendimiento con métricas
 
 ---
 
@@ -644,20 +641,20 @@ try {
 ### **Sistema Completo**
 - ✅ **Arquitectura Escalable**: Preparado para múltiples clases y usuarios
 - ✅ **Autenticación Robusta**: NextAuth con roles y permisos
-- ✅ **AI Integration**: Groq respondiendo correctamente
-- ✅ **PDF Processing**: pdf2json manejando archivos complejos
+- ✅ **Integración IA**: Groq respondiendo correctamente
+- ✅ **Procesamiento de PDF**: pdf2json manejando archivos complejos
 
-### **Performance**
-- ⚡ **Next.js 16**: Turbopack mejorando build times ~4.8s
-- ⚡ **MongoDB**: Queries optimizadas con indexes
-- ⚡ **Groq API**: Respuestas <2s promedio
-- ⚡ **File Upload**: Procesamiento streaming de PDFs
+### **Rendimiento**
+- ⚡ **Next.js 16**: Turbopack mejorando tiempos de compilación ~4.8s
+- ⚡ **MongoDB**: Consultas optimizadas con índices
+- ⚡ **API Groq**: Respuestas <2s promedio
+- ⚡ **Subida de Archivos**: Procesamiento en flujo (streaming) de PDFs
 
-### **User Experience**
-- 🎨 **Responsive**: Tailwind CSS mobile-first
-- 🔄 **Real-time**: Chat interface con auto-scroll
-- 💾 **Persistent**: Historial completo de conversaciones
-- 🚀 **Fast**: Server Components + Client optimizado
+### **Experiencia de Usuario**
+- 🎨 **Adaptable (Responsive)**: Tailwind CSS orientado a móviles
+- 🔄 **Tiempo Real**: Interfaz de chat con desplazamiento automático
+- 💾 **Persistente**: Historial completo de conversaciones
+- 🚀 **Rápido**: Componentes de Servidor + Cliente optimizado
 
 ---
 
