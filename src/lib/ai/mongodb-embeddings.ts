@@ -23,7 +23,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   if (process.env.GOOGLE_API_KEY) {
     try {
       const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "embedding-001" });
+      const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
       const result = await model.embedContent(text);
       return result.embedding.values;
     } catch (error) {

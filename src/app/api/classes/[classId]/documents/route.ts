@@ -206,9 +206,10 @@ export async function DELETE(
       // Continuar aunque falle la eliminación del archivo
     }
 
-    // Eliminar embeddings de la base de datos
+    // Eliminar embeddings de la base de datos (los chunks se guardan con el
+    // _id del documento como documentId, no con su path — ver process/route.ts)
     try {
-      await deleteDocumentEmbeddings(classId, docToDelete.path || documentName);
+      await deleteDocumentEmbeddings(classId, String(docToDelete._id));
     } catch (embedError) {
       console.error('Error eliminando embeddings de la BD:', embedError);
     }
