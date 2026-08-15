@@ -9,7 +9,7 @@ import { generateVerificationToken, sendVerificationEmail } from '@/lib/email/ve
 
 export async function POST(req: NextRequest) {
   try {
-    const { nombre, email, password, rol, institucion, codigoClase } = await req.json();
+    const { nombre, email, password, institucion, codigoClase } = await req.json();
 
     if (!nombre || !email || !password || !institucion) {
       return NextResponse.json(
@@ -50,6 +50,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Validar código de maestro (REMOVED)
+    // El rol por defecto siempre será 'Estudiante'
+    const finalRole = 'Estudiante';
+
     // Generar token de verificación
     const verificationToken = generateVerificationToken();
 
@@ -58,17 +62,23 @@ export async function POST(req: NextRequest) {
       nombre,
       email,
       password: await hash(password, 10), // Hash la contraseña ahora
-      rol: 'Estudiante',
+      rol: finalRole,
       institucion,
       codigoClase: codigoClase || null,
       verificationToken
     });
 
     // Enviar email de verificación
-    const emailSent = await sendVerificationEmail(email, nombre, verificationToken);
+    const emailSent = await sendVerificationEmail(email, nombre, verificationToken).catch(() => false);
     
-    if (!emailSent) {
-      // Si no se pudo enviar el email, eliminar el pre-registro
+    // BYPASS PARA DESARROLLO LOCAL
+    console.log(`\n\n=== ENLACE DE VERIFICACIÓN LOCAL ===\nhttp://localhost:3000/api/auth/verify-email?token=${verificationToken}\n=====================================\n\n`);
+    
+    // Check if SMTP is configured, if not we will just skip the failure so the user can verify via local log or auto-verify
+    const hasSmtpConfigured = !!process.env.SMTP_USER;
+    
+    if (!emailSent && hasSmtpConfigured) {
+      // Solo fallar y borrar si realmente esperamos que el correo funcione
       await PreRegistrationModel.findByIdAndDelete(preRegistration._id);
       return NextResponse.json(
         { message: 'Error enviando email de verificación. Intenta nuevamente.' },

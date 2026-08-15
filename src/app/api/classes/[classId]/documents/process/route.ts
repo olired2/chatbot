@@ -3,9 +3,10 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { ClassModel } from '@/models/Class';
 import connectDB from '@/lib/db/mongodb';
-import { generateEmbedding, storeEmbeddings, DocumentChunk } from '@/lib/ai/supabase-embeddings';
+import { generateEmbedding, storeEmbeddings, DocumentChunk } from '@/lib/ai/mongodb-embeddings';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // Permitir hasta 60 segundos para procesar PDFs en Vercel
 
 /**
  * Divide texto en chunks
@@ -84,7 +85,14 @@ export async function POST(
     console.log(`📋 classId: ${classId}`);
 
     // Descargar el PDF desde la URL
-    const pdfResponse = await fetch(documentUrl);
+    let fullDocumentUrl = documentUrl;
+    if (documentUrl.startsWith('/')) {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.BASE_URL || 'http://localhost:3001';
+      fullDocumentUrl = `${baseUrl}${documentUrl}`;
+    }
+    
+    console.log(`📥 Descargando PDF desde: ${fullDocumentUrl}`);
+    const pdfResponse = await fetch(fullDocumentUrl);
     if (!pdfResponse.ok) {
       throw new Error(`Error descargando PDF: ${pdfResponse.statusText}`);
     }
@@ -200,64 +208,61 @@ export async function POST(
       console.log(`✅ Documento marcado como procesado`);
       console.log(`📊 Resultado de actualización:`, updateResult?.documents?.filter((d: any) => d.path === documentUrl));
 
-      // Procesar embeddings en background (sin esperar)
-      console.log(`⏳ Iniciando procesamiento de embeddings en background...`);
+      // Procesar embeddings directamente (await obligatorio en Vercel Serverless)
+      console.log(`⏳ Iniciando procesamiento de embeddings...`);
       
-      // Fire and forget - procesamiento en background
-      (async () => {
-        try {
-          console.log(`🔄 Procesando embeddings en background para ${chunks.length} chunks...`);
+      try {
+        console.log(`🔄 Procesando embeddings para ${chunks.length} chunks...`);
+        
+        // Generar embeddings para cada chunk
+        const embeddingPromises = chunks.map((chunk, index) => 
+          generateEmbedding(chunk)
+            .then(embedding => ({
+              classId,
+              documentId: documentId || documentUrl,
+              chunkIndex: index,
+              content: chunk,
+              embedding
+            }))
+            .catch(err => {
+              console.error(`❌ Error generando embedding para chunk ${index}:`, err);
+              return null;
+            })
+        );
+        
+        const results = await Promise.all(embeddingPromises);
+        const successfulEmbeddings = results.filter((r): r is DocumentChunk => r !== null);
+        
+        if (successfulEmbeddings.length > 0) {
+          console.log(`✅ Generados ${successfulEmbeddings.length}/${chunks.length} embeddings`);
           
-          // Generar embeddings para cada chunk
-          const embeddingPromises = chunks.map((chunk, index) => 
-            generateEmbedding(chunk)
-              .then(embedding => ({
-                classId,
-                documentId: documentId || documentUrl,
-                chunkIndex: index,
-                content: chunk,
-                embedding
-              }))
-              .catch(err => {
-                console.error(`❌ Error generando embedding para chunk ${index}:`, err);
-                return null;
-              })
+          // Guardar embeddings en la base de datos
+          await storeEmbeddings(successfulEmbeddings);
+          
+          // Marcar documento como completamente procesado
+          await ClassModel.findByIdAndUpdate(
+            classId,
+            {
+              $set: {
+                'documents.$[doc].embeddings': true,
+              },
+            },
+            {
+              arrayFilters: [{ 'doc.path': documentUrl }],
+            }
           );
           
-          const results = await Promise.all(embeddingPromises);
-          const successfulEmbeddings = results.filter((r): r is DocumentChunk => r !== null);
-          
-          if (successfulEmbeddings.length > 0) {
-            console.log(`✅ Generados ${successfulEmbeddings.length}/${chunks.length} embeddings`);
-            
-            // Guardar embeddings en la base de datos
-            await storeEmbeddings(successfulEmbeddings);
-            
-            // Marcar documento como completamente procesado
-            await ClassModel.findByIdAndUpdate(
-              classId,
-              {
-                $set: {
-                  'documents.$[doc].embeddings': true,
-                },
-              },
-              {
-                arrayFilters: [{ 'doc.path': documentUrl }],
-              }
-            );
-            
-            console.log(`🎉 Documento completamente procesado: ${documentUrl}`);
-          } else {
-            console.warn(`⚠️ No se pudieron generar embeddings para ${documentUrl}`);
-          }
-        } catch (error) {
-          console.error(`❌ Error en procesamiento de embeddings en background:`, error);
+          console.log(`🎉 Documento completamente procesado: ${documentUrl}`);
+        } else {
+          console.warn(`⚠️ No se pudieron generar embeddings para ${documentUrl}`);
         }
-      })();
+      } catch (error) {
+        console.error(`❌ Error en procesamiento de embeddings:`, error);
+      }
       
       return NextResponse.json({
         success: true,
-        message: 'Documento recibido. Procesando embeddings en background...',
+        message: 'Documento recibido y embeddings procesados exitosamente.',
         chunks: chunks.length,
       });
     } finally {

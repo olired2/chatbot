@@ -13,7 +13,7 @@ export default async function RegisterPage() {
     <>
       <div className="text-center">
         <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-          Registro de Estudiante
+          Registro en MentorBot
         </h2>
         <p className="mt-2 text-sm text-gray-600">
           Completa el formulario para crear tu cuenta

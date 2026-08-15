@@ -48,6 +48,8 @@ next-env.d.ts
 # Project specific
 uploads/*
 !uploads/.gitkeep
+/public/uploads/*
+!/public/uploads/.gitkeep
 chroma_db/*
 !chroma_db/.gitkeep
 

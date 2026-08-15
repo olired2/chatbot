@@ -16,7 +16,7 @@ const preRegistrationSchema = new mongoose.Schema({
   },
   rol: {
     type: String,
-    enum: ['Maestro', 'Estudiante'],
+    enum: ['Maestro', 'Estudiante', 'Administrador'],
     required: true
   },
   institucion: {
