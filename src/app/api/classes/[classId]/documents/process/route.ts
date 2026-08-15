@@ -85,7 +85,14 @@ export async function POST(
     console.log(`📋 classId: ${classId}`);
 
     // Descargar el PDF desde la URL
-    const pdfResponse = await fetch(documentUrl);
+    let fullDocumentUrl = documentUrl;
+    if (documentUrl.startsWith('/')) {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.BASE_URL || 'http://localhost:3001';
+      fullDocumentUrl = `${baseUrl}${documentUrl}`;
+    }
+    
+    console.log(`📥 Descargando PDF desde: ${fullDocumentUrl}`);
+    const pdfResponse = await fetch(fullDocumentUrl);
     if (!pdfResponse.ok) {
       throw new Error(`Error descargando PDF: ${pdfResponse.statusText}`);
     }

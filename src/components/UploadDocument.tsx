@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { upload } from '@vercel/blob/client';
 
 interface UploadDocumentProps {
   classId: string;
@@ -51,23 +50,26 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
     setProgress(0);
 
     try {
-      // Upload directo a Vercel Blob (soporta archivos grandes)
-      const fileName = `${Date.now()}_${file.name}`;
-      
       setProgress(10);
-      setMessage('Iniciando subida...');
+      setMessage('Subiendo archivo al servidor local...');
       
-      const blob = await upload(fileName, file, {
-        access: 'public',
-        handleUploadUrl: `/api/classes/${classId}/documents/upload-token`,
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setProgress(percentCompleted);
-          setMessage(`Subiendo archivo... ${percentCompleted}%`);
-        },
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const uploadResponse = await fetch(`/api/classes/${classId}/documents/local-upload`, {
+        method: 'POST',
+        body: formData,
       });
+      
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        throw new Error(errorData.error || 'Error al subir el archivo');
+      }
+      
+      const uploadData = await uploadResponse.json();
+      const blobUrl = uploadData.url;
 
-      console.log('Archivo subido a Blob:', blob.url);
+      console.log('Archivo subido localmente:', blobUrl);
       setProgress(90);
       setMessage('📝 Registrando documento...');
 
@@ -78,7 +80,7 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          blobUrl: blob.url,
+          blobUrl: blobUrl,
           fileName: file.name,
           fileSize: file.size,
         }),
