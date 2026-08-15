@@ -4,7 +4,8 @@
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
-![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white)
+![Groq](https://img.shields.io/badge/Groq-F55036?style=for-the-badge&logo=groq&logoColor=white)
+![Gemini](https://img.shields.io/badge/Gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)
 
 **MentorBot** es una plataforma de educación digital (SaaS) potenciada por Inteligencia Artificial, diseñada para asistir a docentes y estudiantes mediante un entorno de aprendizaje altamente interactivo. El núcleo del sistema es un asistente virtual impulsado por Modelos de Lenguaje de Gran Escala (LLM) que funciona bajo el paradigma **RAG (Generación Aumentada por Recuperación)**, garantizando que el bot ofrezca tutorías estrictamente basadas en el temario proporcionado por el profesor.
 

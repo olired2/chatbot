@@ -1,4 +1,4 @@
-# 🏗️ Arquitectura del Agente Virtual Educativo - Cultura Empresarial
+# 🏗️ Arquitectura del Agente Virtual Educativo - MentorBot
 
 ## 📋 Resumen Ejecutivo
 
@@ -35,9 +35,9 @@ graph TB
     
     subgraph "IA & Procesamiento"
         Groq[API Groq AI]
+        Gemini[Gemini Embeddings]
         PDF[Procesamiento de PDF]
-        Embeddings[Embeddings/RAG]
-        ChromaDB[Archivos ChromaDB]
+        Persona[persona.ts]
     end
     
     UI --> Pages
@@ -46,9 +46,10 @@ graph TB
     Pages --> Session
     API --> Models
     Models --> MongoDB
-    API --> Embeddings
-    Embeddings --> Groq
-    PDF --> ChromaDB
+    API --> Persona
+    Persona --> Groq
+    PDF --> Gemini
+    Gemini --> MongoDB
 ```
 
 ---
@@ -132,10 +133,7 @@ residencia/
 │       ├── next-auth.d.ts               # Tipos NextAuth
 │       └── mongodb.ts                   # Tipos MongoDB
 │
-├── 📂 chroma_db/                        # Almacén de embeddings
-│   └── 📂 [classId]/                    # Embeddings por clase
-│       └── *.json                       # Fragmentos de documentos
-├── 📂 uploads/                          # Archivos subidos
+├── 📂 public/uploads/                   # Archivos subidos (modo local; en Vercel se usa Blob)
 │   └── 📂 [classId]/                    # Archivos por clase
 │       └── *.pdf                        # Documentos PDF
 ├── 📂 scripts/                          # Scripts de utilidad
@@ -277,15 +275,17 @@ interface IInteraction {
 sequenceDiagram
     participant M as Maestro
     participant API as API de Subida
+    participant ST as storage/documents.ts
     participant PDF as pdf2json
-    participant FS as Sistema de Archivos
+    participant Gemini as Gemini Embeddings
     participant DB as MongoDB
     
     M->>API: Subir PDF
-    API->>PDF: Procesar PDF
-    PDF->>PDF: Extraer texto
-    PDF->>PDF: Dividir en fragmentos (1000 caracteres)
-    PDF->>FS: Guardar en chroma_db/[classId]/
+    API->>ST: saveDocument() (Blob o disco local)
+    API->>PDF: Leer y extraer texto
+    PDF->>PDF: Dividir en fragmentos (500 caracteres, solape 100)
+    PDF->>Gemini: Generar embedding por fragmento
+    Gemini->>DB: Guardar chunks + embeddings (DocumentChunk)
     API->>DB: Actualizar Class.documents[]
     API->>M: Respuesta de éxito
 ```
@@ -296,15 +296,16 @@ sequenceDiagram
 sequenceDiagram
     participant E as Estudiante
     participant API as API de Chat
-    participant FS as Sistema de Archivos
-    participant Groq as Groq AI
     participant DB as MongoDB
+    participant Persona as persona.ts
+    participant Groq as Groq AI
     
     E->>API: Enviar pregunta
-    API->>FS: Cargar documentos de clase
-    FS->>API: Retornar fragmentos de documento
-    API->>API: Seleccionar 5 fragmentos más relevantes
-    API->>Groq: Enviar contexto + pregunta
+    API->>DB: Cargar últimos 6 intercambios (memoria conversacional)
+    API->>DB: Buscar chunks por similitud coseno (top 5)
+    API->>Persona: buildSystemPrompt(clase, fragmentos, historial)
+    Persona->>API: System prompt del especialista
+    API->>Groq: Enviar prompt + historial + pregunta
     Groq->>API: Retornar respuesta de la IA
     API->>DB: Guardar interacción
     API->>E: Retornar respuesta + fuentes
@@ -316,8 +317,8 @@ sequenceDiagram
 // Endpoint: https://api.groq.com/openai/v1/chat/completions
 const groqConfig = {
   model: 'llama-3.3-70b-versatile',
-  temperature: 0.7,           // Balance creatividad/precisión
-  max_tokens: 1024,           // Respuestas concisas
+  temperature: 0.5,           // Balance creatividad/precisión
+  max_tokens: 1600,
   stream: false               // Respuesta completa
 };
 
@@ -486,19 +487,19 @@ sequenceDiagram
 ## 🔧 Variables de Entorno
 
 ```bash
-# .env.local
+# .env.local — ver .env.example para la lista completa y actualizada
 NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=REDACTED_NEXTAUTH_SECRET
+NEXTAUTH_SECRET=<genera-un-secreto-propio>
 
 # MongoDB Atlas
-MONGODB_URI=mongodb+srv://user:pass@cluster0.vqye7ir.mongodb.net/chatbot
-MONGO_DBNAME=chatbot
+MONGODB_URI=mongodb+srv://<usuario>:<password>@<tu-cluster>.mongodb.net/<db>
+MONGO_DBNAME=residencia
 
-# Groq AI (FUNCIONANDO)
-GROQ_API_KEY=REDACTED_GROQ_API_KEY
+# Groq AI (respuestas del chat)
+GROQ_API_KEY=<tu-clave-de-groq>
 
-# Google AI (RESPALDO - no funciona)
-GOOGLE_API_KEY=REDACTED_GOOGLE_API_KEY
+# Google AI (embeddings con Gemini)
+GOOGLE_API_KEY=<tu-clave-de-google>
 ```
 
 ---
@@ -523,7 +524,7 @@ GOOGLE_API_KEY=REDACTED_GOOGLE_API_KEY
 - Tiempo de respuesta de API Groq
 - Tasa de éxito de procesamiento de PDF
 - Errores de autenticación
-- Uso de almacenamiento (uploads/ y chroma_db/)
+- Uso de almacenamiento de documentos (disco local o Vercel Blob) y de la colección de embeddings en MongoDB
 
 ### **Panel del Maestro**
 
