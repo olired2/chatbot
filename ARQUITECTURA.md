@@ -70,9 +70,15 @@ graph TB
 
 ### **IA & Procesamiento**
 - **LLM**: API Groq (Llama 3.3 70B Versatile)
+- **Personalidad del bot**: `persona.ts` detecta el área de la clase y arma un system prompt de especialista, con memoria conversacional de los últimos intercambios
 - **Procesamiento de PDF**: pdf2json v4.0.0
-- **RAG**: Embeddings personalizados + Archivos ChromaDB
-- **Almacenamiento Vectorial**: Archivos JSON en el sistema de archivos
+- **RAG**: Embeddings con Gemini (`embedding-001`) vía `mongodb-embeddings.ts`
+- **Almacenamiento Vectorial**: Colección de chunks + embeddings en MongoDB Atlas
+
+### **Almacenamiento de Documentos**
+- Estrategia dual controlada por `NEXT_PUBLIC_STORAGE_MODE` (ver `.env.example`) y resuelta en `src/lib/storage/documents.ts`:
+  - `blob`: subida directa a Vercel Blob desde el cliente (necesario en despliegues serverless de Vercel, sin límite de tamaño de body)
+  - `local` (o sin definir): guardado en disco bajo `public/uploads/[classId]/` (solo para desarrollo o un servidor propio con disco persistente)
 
 ---
 
@@ -315,31 +321,28 @@ const groqConfig = {
   stream: false               // Respuesta completa
 };
 
-// Prompt del sistema
-const MENTOR_PERSONA = `
-Eres un mentor académico especializado en Cultura Empresarial.
-Usa los documentos proporcionados como contexto principal.
-Responde de manera educativa, clara y con ejemplos cuando sea apropiado.
-Si la pregunta no está relacionada con el tema, redirige amablemente.
-`;
+// El system prompt no es un template fijo: buildSystemPrompt() en persona.ts
+// detecta el área de la clase a partir del nombre, la descripción y los
+// fragmentos recuperados, y arma una identidad de especialista + reglas de
+// rigor + memoria conversacional para cada llamada.
 ```
 
 ### **Almacenamiento de Embeddings**
 
-```json
-// Estructura: chroma_db/[classId]/[documento].json
+Los embeddings se generan con Gemini (`embedding-001`) y se guardan como documentos en una colección de MongoDB (`DocumentChunk`), en vez de archivos en disco:
+
+```typescript
+// Estructura de cada chunk (src/models/DocumentChunk.ts)
 {
-  "documents": [
-    {
-      "pageContent": "Fragmento de texto del PDF (máximo 1000 caracteres)",
-      "metadata": {
-        "source": "nombre_documento.pdf",
-        "chunk": 1
-      }
-    }
-  ]
+  classId: string;
+  documentId: string;
+  chunkIndex: number;
+  content: string;      // Fragmento de texto del PDF
+  embedding: number[];  // Vector de embedding
 }
 ```
+
+La búsqueda (`searchDocuments` en `mongodb-embeddings.ts`) calcula similitud coseno en memoria contra los chunks de la clase.
 
 ---
 

@@ -18,7 +18,7 @@ El proyecto está construido bajo una arquitectura moderna, orientada a la escal
 - ⚙️ **Backend:** Rutas de API de Next.js (Funciones *Serverless*).
 - 🗄️ **Base de Datos:** MongoDB (NoSQL) con Mongoose para la esquematización y validación de datos.
 - 🔐 **Autenticación:** NextAuth.js con manejo de credenciales propias, cifrado de contraseñas mediante `bcryptjs` y protección contra falsificación de peticiones entre sitios (CSRF).
-- 🧠 **Motor de Inteligencia Artificial:** API de OpenAI integrada con LangChain (Arquitectura RAG para el análisis de PDFs y documentos vectoriales).
+- 🧠 **Motor de Inteligencia Artificial:** Groq (Llama 3.3 70B) para las respuestas del chat, con embeddings de Gemini (`embedding-001`) y búsqueda vectorial en MongoDB para el RAG. `persona.ts` arma el system prompt del especialista por clase con memoria conversacional.
 - 📧 **Servicio de Correos (SMTP):** Automatización mediante Nodemailer.
 - 🎨 **Estilos y Diseño:** Tailwind CSS.
 
@@ -79,10 +79,15 @@ Clona el archivo `.env.example` a `.env` e incluye las siguientes configuracione
 MONGODB_URI=mongodb://localhost:27017/mentorbot
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=<tu_secreto_generado>
-OPENAI_API_KEY=<tu_clave_de_openai>
+GROQ_API_KEY=<tu_clave_de_groq>
+GOOGLE_API_KEY=<tu_clave_de_google_para_embeddings>
+CRON_SECRET_TOKEN=<token_para_llamadas_internas>
 SMTP_USER=<correo_sistema>
 SMTP_PASS=<password_aplicacion>
+NEXT_PUBLIC_STORAGE_MODE=local
 ```
+
+Ver `.env.example` para la lista completa de variables (incluye correo, cron jobs y almacenamiento de documentos).
 
 ### 3. 🚀 Puesta en Marcha
 
