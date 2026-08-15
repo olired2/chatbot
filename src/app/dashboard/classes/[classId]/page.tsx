@@ -232,7 +232,7 @@ export default async function ClassDetailPage({
                   <div className="ml-4 flex flex-col gap-2 items-end">
                     {student.needsMotivation && student.totalInteractions > 0 ? (
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-200 text-yellow-800">
-                        ⚠️ Necesita motivación (Inactivo > 15 días)
+                        ⚠️ Necesita motivación (Inactivo &gt; 15 días)
                       </span>
                     ) : null}
                   </div>
