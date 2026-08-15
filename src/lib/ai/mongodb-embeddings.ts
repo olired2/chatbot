@@ -23,7 +23,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   if (process.env.GOOGLE_API_KEY) {
     try {
       const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+      const model = genAI.getGenerativeModel({ model: "embedding-001" });
       const result = await model.embedContent(text);
       return result.embedding.values;
     } catch (error) {
@@ -47,7 +47,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   const embedding = new Array(25).fill(0);
   if (words.length === 0) return embedding;
   
-  const wordFreq: { [key: string]: number } = {};
+  const wordFreq: { [key: string]: number } = Object.create(null);
   words.forEach(word => { wordFreq[word] = (wordFreq[word] || 0) + 1; });
   
   Object.entries(semanticMap).forEach(([category, keywords], index) => {
