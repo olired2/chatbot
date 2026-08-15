@@ -3,8 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { ClassModel } from '@/models/Class';
 import connectDB from '@/lib/db/mongodb';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { saveDocument } from '@/lib/storage/documents';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,18 +45,10 @@ export async function POST(
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    
-    const uploadDir = join(process.cwd(), 'public', 'uploads', classId);
-    await mkdir(uploadDir, { recursive: true });
-    
-    const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const filePath = join(uploadDir, fileName);
-    
-    await writeFile(filePath, buffer);
-    
-    const blobUrl = `/uploads/${classId}/${fileName}`;
 
-    return NextResponse.json({ url: blobUrl });
+    const url = await saveDocument(classId, file.name, buffer);
+
+    return NextResponse.json({ url });
   } catch (error) {
     console.error('Error en local-upload:', error);
     return NextResponse.json(

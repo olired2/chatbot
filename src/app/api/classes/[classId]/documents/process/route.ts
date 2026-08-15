@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { ClassModel } from '@/models/Class';
 import connectDB from '@/lib/db/mongodb';
 import { generateEmbedding, storeEmbeddings, DocumentChunk } from '@/lib/ai/mongodb-embeddings';
+import { readDocument } from '@/lib/storage/documents';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // Permitir hasta 60 segundos para procesar PDFs en Vercel
@@ -84,21 +85,9 @@ export async function POST(
     console.log(`📋 documentUrl: ${documentUrl}`);
     console.log(`📋 classId: ${classId}`);
 
-    // Descargar el PDF desde la URL
-    let fullDocumentUrl = documentUrl;
-    if (documentUrl.startsWith('/')) {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.BASE_URL || 'http://localhost:3001';
-      fullDocumentUrl = `${baseUrl}${documentUrl}`;
-    }
-    
-    console.log(`📥 Descargando PDF desde: ${fullDocumentUrl}`);
-    const pdfResponse = await fetch(fullDocumentUrl);
-    if (!pdfResponse.ok) {
-      throw new Error(`Error descargando PDF: ${pdfResponse.statusText}`);
-    }
-
-    const pdfArrayBuffer = await pdfResponse.arrayBuffer();
-    const pdfBuffer = Buffer.from(pdfArrayBuffer);
+    // Leer el PDF (disco local o Vercel Blob, según dónde se haya guardado)
+    console.log(`📥 Leyendo PDF: ${documentUrl}`);
+    const pdfBuffer = await readDocument(documentUrl);
 
     // Parsear el PDF con pdf2json
     const PDFParser = (await import('pdf2json')).default;

@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+const USE_BLOB_STORAGE = process.env.NEXT_PUBLIC_STORAGE_MODE === 'blob';
+
 interface UploadDocumentProps {
   classId: string;
   onUploadSuccess?: () => void;
@@ -51,25 +53,50 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
 
     try {
       setProgress(10);
-      setMessage('Subiendo archivo al servidor local...');
-      
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      const uploadResponse = await fetch(`/api/classes/${classId}/documents/local-upload`, {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!uploadResponse.ok) {
-        const errorData = await uploadResponse.json();
-        throw new Error(errorData.error || 'Error al subir el archivo');
-      }
-      
-      const uploadData = await uploadResponse.json();
-      const blobUrl = uploadData.url;
 
-      console.log('Archivo subido localmente:', blobUrl);
+      let blobUrl: string;
+
+      if (USE_BLOB_STORAGE) {
+        // Subida directa a Vercel Blob (soporta archivos grandes sin pasar
+        // por el límite de body de las funciones serverless)
+        setMessage('Iniciando subida...');
+        const { upload } = await import('@vercel/blob/client');
+        const fileName = `${Date.now()}_${file.name}`;
+
+        const blob = await upload(fileName, file, {
+          access: 'public',
+          handleUploadUrl: `/api/classes/${classId}/documents/upload-token`,
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setProgress(percentCompleted);
+            setMessage(`Subiendo archivo... ${percentCompleted}%`);
+          },
+        });
+
+        console.log('Archivo subido a Blob:', blob.url);
+        blobUrl = blob.url;
+      } else {
+        setMessage('Subiendo archivo al servidor...');
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const uploadResponse = await fetch(`/api/classes/${classId}/documents/local-upload`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json();
+          throw new Error(errorData.error || 'Error al subir el archivo');
+        }
+
+        const uploadData = await uploadResponse.json();
+        blobUrl = uploadData.url;
+
+        console.log('Archivo subido:', blobUrl);
+      }
+
       setProgress(90);
       setMessage('📝 Registrando documento...');
 
