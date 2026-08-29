@@ -13,6 +13,8 @@
  * a ser un tutor riguroso de la materia tal como la nombró el profesor.
  */
 
+import { findProcesosRelevantes, ProcesoQA } from './procesos-institucionales';
+
 export interface SubjectProfile {
   /** Etiqueta legible del área, se usa en el texto del prompt */
   label: string;
@@ -198,7 +200,7 @@ const SUBJECT_PROFILES: Record<string, SubjectProfile> = {
     specialization: 'emprendimiento, innovación y validación temprana de productos',
     methodologies:
       'Lean Startup (Build-Measure-Learn), Design Thinking, SCAMPER, MVP, entrevistas de descubrimiento, pitch deck, métricas de tracción',
-    referents: 'Sara Blakely (Spanx), Brian Chesky (Airbnb), Tesla, casos de startups latinoamericanas',
+    referents: 'ra Blakely (Spanx), Brian Chesky (Airbnb), Tesla, casos de startups latinoamericanas',
     tone: 'dinámico y orientado a la acción',
     habits: [
       'Empujas siempre hacia validar con usuarios reales antes de construir',
@@ -439,11 +441,14 @@ export function buildSystemPrompt(params: {
   description?: string;
   documentNames: string[];
   fragments: ContextFragment[];
+  /** Pregunta actual del alumno: se usa para detectar si es un trámite institucional preestablecido */
+  question?: string;
 }): string {
-  const { className, description, documentNames, fragments } = params;
+  const { className, description, documentNames, fragments, question } = params;
 
   const contextText = fragments.map(f => f.content).join(' ');
   const subject = detectSubject({ className, description, contextText });
+  const procesos = question ? findProcesosRelevantes(question) : [];
 
   const identity = subject.profile && subject.confidence >= 0.5
     ? buildSpecialistIdentity(subject, className)
@@ -462,6 +467,8 @@ export function buildSystemPrompt(params: {
     ? `Material de la clase: ${documentNames.map(n => `"${n}"`).join(', ')}.`
     : 'Todavía no hay material indexado en esta clase.';
 
+  const procesosBlock = procesos.length > 0 ? buildProcesosBlock(procesos) : null;
+
   return `${identity}
 
 ═══ CONTEXTO DE LA CLASE ═══
@@ -469,6 +476,10 @@ Clase: "${className}"${description ? `\nDescripción del profesor: ${description
 ${materialBlock}
 
 ${
+  procesosBlock
+    ? `${procesosBlock}\n`
+    : ''
+}${
   contextBlock
     ? `═══ FRAGMENTOS RECUPERADOS DEL MATERIAL ═══
 Estos son los pasajes más relevantes para la pregunta actual. Ordenados por relevancia.
@@ -487,10 +498,20 @@ ${subject.profile ? subject.profile.habits.map(h => `• ${h}`).join('\n') : '�
 3. PRECISIÓN SOBRE FLUIDEZ: prefiere el término técnico correcto y explícalo, en vez de una simplificación que deforme el concepto.
 4. ALCANCE: tu dominio es ${subject.profile?.label ?? className}. Si preguntan algo de otra materia, dilo en una frase y reconduce: "eso ya sale de ${subject.profile?.label ?? className}; dentro de la clase te puedo ayudar con...". No des cátedra de temas ajenos.
 5. CONTRADICCIONES: si el material de clase dice algo distinto a lo que sabes del área, prioriza el material y señala la discrepancia con respeto.
+6. NORMATIVA Y TRÁMITES: si la pregunta es sobre normativa o trámites (inscripción, residencia, servicio social, titulación, visitas industriales, becas), tu fuente es, en este orden: (a) el bloque "PROCESOS INSTITUCIONALES" si aparece más abajo, (b) los fragmentos recuperados del material, citando el documento exacto (ej. "según TecNM-AC-PO-004..."). Si ninguno lo respalda, dilo explícitamente y deriva al departamento responsable o a control escolar — nunca completes con supuestos sobre trámites.
+7. VERIFICA ANTES DE CONFIRMAR: revisa tu propio razonamiento (unidades, casos borde, coherencia del resultado) antes de darlo por bueno. Si detectas un error a medio camino, corrígelo en vez de arrastrarlo.
+
+═══ MÉTODO SOCRÁTICO (ejercicios de tarea o examen) ═══
+Tu misión es acompañar el aprendizaje, no resolver la tarea por el alumno. Cuando la pregunta sea claramente un ejercicio de tarea o examen:
+1. Primero identifica el error o laguna conceptual detrás de la pregunta.
+2. Haz 1-2 preguntas orientadoras que empujen al alumno a encontrar el camino él mismo — no reveles el resultado todavía.
+3. Solo después de esa interacción (o si el alumno ya demostró su intento y sigue atorado, o pide explícitamente ver el desarrollo) muestra el paso a paso razonado completo.
+Nunca entregues la solución final en la primera respuesta a un ejercicio. Esto no aplica a preguntas de definición, conceptuales o de "ayúdame a hacer X" (entregables), donde sí puedes responder directo.
 
 ═══ CÓMO RESPONDES ═══
 • Pregunta de definición → definición precisa en 1 párrafo + 2-3 elementos clave + un ejemplo concreto. Breve.
-• Pregunta de procedimiento o cálculo → pasos numerados, con el razonamiento de cada uno y la verificación al final.
+• Ejercicio de tarea o examen → sigue el MÉTODO SOCRÁTICO: no lo resuelvas de entrada.
+• Pregunta de procedimiento o cálculo (no es tarea/examen) → pasos numerados, con el razonamiento de cada uno y la verificación al final.
 • "Ayúdame a hacer/escribir X" → entregable estructurado y listo para usar, con títulos en **negrita** y listas.
 • Pregunta conceptual profunda → explicación por capas: primero la intuición, luego el detalle técnico.
 • Pregunta confusa o incompleta → pide la aclaración concreta que te falta, con un ejemplo de cómo reformularla.
@@ -511,6 +532,26 @@ Cuando ayuda, te apoyas en referentes y casos del área: ${p.referents}.
 ${subject.secondary.length > 0 ? `La clase también toca ${subject.secondary.join(' y ')}; puedes cruzar esas áreas cuando la pregunta lo pida.` : ''}
 
 No anuncias tu especialidad en cada mensaje ni te presentas repetidamente: se nota en la calidad, la precisión y el vocabulario de tus respuestas.`;
+}
+
+/**
+ * Arma el bloque de trámites institucionales preestablecidos que coinciden con
+ * la pregunta del alumno. Es contenido oficial y curado (no material subido
+ * por el profesor), así que se presenta como la fuente de mayor autoridad
+ * para estos temas.
+ */
+function buildProcesosBlock(procesos: ProcesoQA[]): string {
+  const items = procesos
+    .map(
+      p =>
+        `• Pregunta tipo: "${p.pregunta}"\n  Respuesta oficial: ${p.respuesta}\n  Departamento responsable: ${p.departamento} — tel. ${p.telefono} ext. ${p.extension} — ${p.correo}`
+    )
+    .join('\n\n');
+
+  return `═══ PROCESOS INSTITUCIONALES (fuente oficial preestablecida del TecNM Campus Colima) ═══
+La pregunta del alumno coincide con uno o más trámites ya documentados oficialmente. Úsalos como base de tu respuesta — no los reinterpretes ni los completes con supuestos — y, si aplica, indica el departamento y contacto responsable para gestionarlo.
+
+${items}`;
 }
 
 function buildGeneralistIdentity(className: string, subject: DetectedSubject): string {
