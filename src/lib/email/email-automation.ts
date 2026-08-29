@@ -193,4 +193,104 @@ export async function getMotivationalEmailStats(classId?: string) {
 export async function runMotivationalEmailsManually() {
   console.log('🚀 Ejecutando proceso manual de correos motivacionales...');
   return await checkAndSendMotivationalEmails();
+<<<<<<< HEAD
 }
+=======
+}
+export async function getStudentsWithActivityForTeacher(teacherId: string) {
+  try {
+    await connectDB();
+    const classes = await ClassModel.find({ teacher: teacherId }).populate('students', 'nombre email _id');
+    const studentsActivity = [];
+    const now = new Date();
+    
+    for (const classDoc of classes) {
+      if (!classDoc.students) continue;
+      
+      for (const student of classDoc.students) {
+        const lastInteraction = await InteractionModel.findOne({
+          usuario_id: student._id,
+          clase_id: classDoc._id
+        }).sort({ fecha: -1 });
+
+        let daysInactive = 0;
+        let lastInteractionDate = null;
+        
+        if (!lastInteraction) {
+          daysInactive = getDaysDifference(classDoc.createdAt, now);
+        } else {
+          daysInactive = getDaysDifference(lastInteraction.fecha, now);
+          lastInteractionDate = lastInteraction.fecha;
+        }
+
+        studentsActivity.push({
+          studentId: student._id,
+          studentName: student.nombre,
+          studentEmail: student.email,
+          classId: classDoc._id,
+          className: classDoc.name,
+          daysInactive,
+          lastInteractionDate
+        });
+      }
+    }
+    
+    // Sort by days inactive (most inactive first)
+    return { success: true, students: studentsActivity.sort((a, b) => b.daysInactive - a.daysInactive) };
+  } catch (error) {
+    console.error('Error fetching students activity:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+export async function sendManualEmailToStudent(studentId: string, classId: string) {
+  try {
+    await connectDB();
+    const student = await UserModel.findById(studentId);
+    const classDoc = await ClassModel.findById(classId);
+    
+    if (!student || !classDoc) {
+      return { success: false, error: 'Student or class not found' };
+    }
+    
+    const lastInteraction = await InteractionModel.findOne({
+      usuario_id: student._id,
+      clase_id: classDoc._id
+    }).sort({ fecha: -1 });
+    
+    const now = new Date();
+    let daysInactive = 0;
+    if (!lastInteraction) {
+      daysInactive = getDaysDifference(classDoc.createdAt, now);
+    } else {
+      daysInactive = getDaysDifference(lastInteraction.fecha, now);
+    }
+    
+    const emailResult = await sendMotivationalEmail(
+      student.email,
+      student.nombre,
+      classDoc.name,
+      daysInactive
+    );
+    
+    if (emailResult.success) {
+      const emailRecord = new MotivationalEmailModel({
+        usuario_id: student._id,
+        clase_id: classDoc._id,
+        tipo_correo: 'manual_profesor',
+        email_enviado_a: student.email,
+        dias_inactividad: daysInactive,
+        template_usado: 'motivacional_manual',
+        estado: 'enviado'
+      });
+      await emailRecord.save();
+      return { success: true };
+    } else {
+      return { success: false, error: emailResult.error };
+    }
+  } catch (error) {
+    console.error('Error sending manual email:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8

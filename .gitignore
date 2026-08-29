@@ -48,6 +48,11 @@ next-env.d.ts
 # Project specific
 uploads/*
 !uploads/.gitkeep
+<<<<<<< HEAD
+=======
+/public/uploads/*
+!/public/uploads/.gitkeep
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 chroma_db/*
 !chroma_db/.gitkeep
 

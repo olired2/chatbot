@@ -4,12 +4,23 @@ import { authOptions } from '@/lib/auth';
 import { ClassModel } from '@/models/Class';
 import { InteractionModel } from '@/models/Interaction';
 import connectDB from '@/lib/db/mongodb';
+<<<<<<< HEAD
 import { searchDocuments } from '@/lib/ai/supabase-embeddings';
+=======
+import { searchDocuments } from '@/lib/ai/mongodb-embeddings';
+import { buildSystemPrompt } from '@/lib/ai/persona';
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 import Groq from 'groq-sdk';
 
 // Marcar como dinámico
 export const dynamic = 'force-dynamic';
 
+<<<<<<< HEAD
+=======
+// Cuántos intercambios previos se le pasan al modelo como memoria conversacional
+const HISTORY_TURNS = 6;
+
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ classId: string }> }
@@ -52,6 +63,14 @@ export async function POST(
         respuesta: noDocsAnswer,
         fecha: new Date()
       });
+<<<<<<< HEAD
+=======
+
+      // Actualizar lastActive del usuario
+      await import('@/models/User').then(({ UserModel }) => 
+        UserModel.findByIdAndUpdate(session.user.id, { lastActive: new Date() })
+      );
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
       
       return NextResponse.json({
         answer: noDocsAnswer,
@@ -59,6 +78,7 @@ export async function POST(
       });
     }
 
+<<<<<<< HEAD
     // Query documents using embeddings from Supabase
     const searchResults = await searchDocuments(classId, question, 5);
     
@@ -85,11 +105,61 @@ Instrucciones:
     const message = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       max_tokens: 1024,
+=======
+    // Recuperar los últimos intercambios para que el bot tenga memoria conversacional
+    const recentInteractions = await InteractionModel.find({
+      usuario_id: session.user.id,
+      clase_id: classId
+    })
+      .sort({ fecha: -1 })
+      .limit(HISTORY_TURNS)
+      .select('pregunta respuesta')
+      .lean();
+    const history = recentInteractions.reverse();
+
+    // Query documents using embeddings from Supabase
+    const searchResults = await searchDocuments(classId, question, 5);
+
+    // Mapear documentId -> nombre real del archivo, para que el bot pueda citar fuentes
+    const documentNameById = new Map<string, string>(
+      (classDoc.documents || []).map((doc: any) => [String(doc._id), doc.name as string])
+    );
+
+    const fragments = searchResults.map(r => ({
+      content: r.content,
+      similarity: r.similarity,
+      documentName: documentNameById.get(String(r.documentId)) || 'documento de la clase',
+    }));
+
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+    // Persona especialista derivada del nombre, la descripción y el material de la clase
+    const systemPrompt = buildSystemPrompt({
+      className: classDoc.name,
+      description: classDoc.description,
+      documentNames: (classDoc.documents || []).map((doc: any) => doc.name),
+      fragments,
+    });
+
+    const historyMessages = history.flatMap((interaction: any) => [
+      { role: 'user' as const, content: interaction.pregunta },
+      { role: 'assistant' as const, content: interaction.respuesta }
+    ]);
+
+    const message = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      max_tokens: 1600,
+      temperature: 0.5,
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
       messages: [
         {
           role: 'system',
           content: systemPrompt
         },
+<<<<<<< HEAD
+=======
+        ...historyMessages,
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
         {
           role: 'user',
           content: question
@@ -108,6 +178,14 @@ Instrucciones:
       sources: searchResults.map(r => r.documentId) || [],
       fecha: new Date()
     });
+<<<<<<< HEAD
+=======
+
+    // Actualizar lastActive del usuario
+    await import('@/models/User').then(({ UserModel }) => 
+      UserModel.findByIdAndUpdate(session.user.id, { lastActive: new Date() })
+    );
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
     
     // Return formatted response
     return NextResponse.json({ 

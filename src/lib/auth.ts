@@ -37,6 +37,12 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
+<<<<<<< HEAD
+=======
+          // Actualizar lastActive al iniciar sesión
+          await UserModel.findByIdAndUpdate(user._id, { lastActive: new Date() });
+
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
           return {
             id: user._id.toString(),
             email: user.email,

@@ -2,7 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+<<<<<<< HEAD
 import { upload } from '@vercel/blob/client';
+=======
+
+const USE_BLOB_STORAGE = process.env.NEXT_PUBLIC_STORAGE_MODE === 'blob';
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 
 interface UploadDocumentProps {
   classId: string;
@@ -51,6 +56,7 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
     setProgress(0);
 
     try {
+<<<<<<< HEAD
       // Upload directo a Vercel Blob (soporta archivos grandes)
       const fileName = `${Date.now()}_${file.name}`;
       
@@ -68,6 +74,53 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
       });
 
       console.log('Archivo subido a Blob:', blob.url);
+=======
+      setProgress(10);
+
+      let blobUrl: string;
+
+      if (USE_BLOB_STORAGE) {
+        // Subida directa a Vercel Blob (soporta archivos grandes sin pasar
+        // por el límite de body de las funciones serverless)
+        setMessage('Iniciando subida...');
+        const { upload } = await import('@vercel/blob/client');
+        const fileName = `${Date.now()}_${file.name}`;
+
+        const blob = await upload(fileName, file, {
+          access: 'public',
+          handleUploadUrl: `/api/classes/${classId}/documents/upload-token`,
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setProgress(percentCompleted);
+            setMessage(`Subiendo archivo... ${percentCompleted}%`);
+          },
+        });
+
+        console.log('Archivo subido a Blob:', blob.url);
+        blobUrl = blob.url;
+      } else {
+        setMessage('Subiendo archivo al servidor...');
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const uploadResponse = await fetch(`/api/classes/${classId}/documents/local-upload`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          const errorData = await uploadResponse.json();
+          throw new Error(errorData.error || 'Error al subir el archivo');
+        }
+
+        const uploadData = await uploadResponse.json();
+        blobUrl = uploadData.url;
+
+        console.log('Archivo subido:', blobUrl);
+      }
+
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
       setProgress(90);
       setMessage('📝 Registrando documento...');
 
@@ -78,7 +131,11 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+<<<<<<< HEAD
           blobUrl: blob.url,
+=======
+          blobUrl: blobUrl,
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
           fileName: file.name,
           fileSize: file.size,
         }),

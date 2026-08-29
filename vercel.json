@@ -3,6 +3,13 @@
     {
       "path": "/api/cron/motivational-emails",
       "schedule": "0 9 * * *"
+<<<<<<< HEAD
+=======
+    },
+    {
+      "path": "/api/cron/cleanup-preregistrations",
+      "schedule": "0 0 * * *"
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
     }
   ]
 }

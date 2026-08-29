@@ -3,9 +3,17 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { ClassModel } from '@/models/Class';
 import connectDB from '@/lib/db/mongodb';
+<<<<<<< HEAD
 import { generateEmbedding, storeEmbeddings, DocumentChunk } from '@/lib/ai/supabase-embeddings';
 
 export const dynamic = 'force-dynamic';
+=======
+import { generateEmbedding, storeEmbeddings, DocumentChunk } from '@/lib/ai/mongodb-embeddings';
+import { readDocument } from '@/lib/storage/documents';
+
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // Permitir hasta 60 segundos para procesar PDFs en Vercel
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 
 /**
  * Divide texto en chunks
@@ -83,6 +91,7 @@ export async function POST(
     console.log(`📋 documentUrl: ${documentUrl}`);
     console.log(`📋 classId: ${classId}`);
 
+<<<<<<< HEAD
     // Descargar el PDF desde la URL
     const pdfResponse = await fetch(documentUrl);
     if (!pdfResponse.ok) {
@@ -91,6 +100,11 @@ export async function POST(
 
     const pdfArrayBuffer = await pdfResponse.arrayBuffer();
     const pdfBuffer = Buffer.from(pdfArrayBuffer);
+=======
+    // Leer el PDF (disco local o Vercel Blob, según dónde se haya guardado)
+    console.log(`📥 Leyendo PDF: ${documentUrl}`);
+    const pdfBuffer = await readDocument(documentUrl);
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 
     // Parsear el PDF con pdf2json
     const PDFParser = (await import('pdf2json')).default;
@@ -200,6 +214,7 @@ export async function POST(
       console.log(`✅ Documento marcado como procesado`);
       console.log(`📊 Resultado de actualización:`, updateResult?.documents?.filter((d: any) => d.path === documentUrl));
 
+<<<<<<< HEAD
       // Procesar embeddings en background (sin esperar)
       console.log(`⏳ Iniciando procesamiento de embeddings en background...`);
       
@@ -258,6 +273,63 @@ export async function POST(
       return NextResponse.json({
         success: true,
         message: 'Documento recibido. Procesando embeddings en background...',
+=======
+      // Procesar embeddings directamente (await obligatorio en Vercel Serverless)
+      console.log(`⏳ Iniciando procesamiento de embeddings...`);
+      
+      try {
+        console.log(`🔄 Procesando embeddings para ${chunks.length} chunks...`);
+        
+        // Generar embeddings para cada chunk
+        const embeddingPromises = chunks.map((chunk, index) => 
+          generateEmbedding(chunk)
+            .then(embedding => ({
+              classId,
+              documentId: documentId || documentUrl,
+              chunkIndex: index,
+              content: chunk,
+              embedding
+            }))
+            .catch(err => {
+              console.error(`❌ Error generando embedding para chunk ${index}:`, err);
+              return null;
+            })
+        );
+        
+        const results = await Promise.all(embeddingPromises);
+        const successfulEmbeddings = results.filter((r): r is DocumentChunk => r !== null);
+        
+        if (successfulEmbeddings.length > 0) {
+          console.log(`✅ Generados ${successfulEmbeddings.length}/${chunks.length} embeddings`);
+          
+          // Guardar embeddings en la base de datos
+          await storeEmbeddings(successfulEmbeddings);
+          
+          // Marcar documento como completamente procesado
+          await ClassModel.findByIdAndUpdate(
+            classId,
+            {
+              $set: {
+                'documents.$[doc].embeddings': true,
+              },
+            },
+            {
+              arrayFilters: [{ 'doc.path': documentUrl }],
+            }
+          );
+          
+          console.log(`🎉 Documento completamente procesado: ${documentUrl}`);
+        } else {
+          console.warn(`⚠️ No se pudieron generar embeddings para ${documentUrl}`);
+        }
+      } catch (error) {
+        console.error(`❌ Error en procesamiento de embeddings:`, error);
+      }
+      
+      return NextResponse.json({
+        success: true,
+        message: 'Documento recibido y embeddings procesados exitosamente.',
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
         chunks: chunks.length,
       });
     } finally {

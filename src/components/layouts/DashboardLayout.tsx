@@ -99,6 +99,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       <span className="hidden lg:inline">📧 </span>Correos
                     </Link>
                   </>
+<<<<<<< HEAD
+=======
+                ) : session?.user.role === 'Administrador' ? (
+                  <>
+                    <Link href="/admin/users" className="text-gray-800 font-medium inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-indigo-500 hover:text-indigo-600 transition-colors text-sm lg:text-base">
+                      <span className="hidden lg:inline">👥 </span>Usuarios
+                    </Link>
+                    <Link href="/admin/platform" className="text-gray-800 font-medium inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-indigo-500 hover:text-indigo-600 transition-colors text-sm lg:text-base">
+                      <span className="hidden lg:inline">⚙️ </span>Plataforma
+                    </Link>
+                  </>
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
                 ) : (
                   <>
                     <Link href="/dashboard/chat" className="text-gray-800 font-medium inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-indigo-500 hover:text-indigo-600 transition-colors text-sm lg:text-base">
@@ -179,6 +191,26 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       📧 Correos Motivacionales
                     </Link>
                   </>
+<<<<<<< HEAD
+=======
+                ) : session?.user.role === 'Administrador' ? (
+                  <>
+                    <Link 
+                      href="/admin/users" 
+                      className="text-gray-700 hover:bg-gray-50 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      👥 Usuarios
+                    </Link>
+                    <Link 
+                      href="/admin/platform" 
+                      className="text-gray-700 hover:bg-gray-50 hover:text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      ⚙️ Plataforma
+                    </Link>
+                  </>
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
                 ) : (
                   <>
                     <Link 
@@ -254,7 +286,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <p className="text-sm font-medium text-gray-900 truncate">
                 {session?.user?.name || session?.user?.email || 'Usuario'}
               </p>
+<<<<<<< HEAD
               <p className="text-xs text-blue-600 font-medium">Maestro</p>
+=======
+              <p className="text-xs text-blue-600 font-medium">{session?.user?.role || 'Usuario'}</p>
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
             </div>
             
             {/* Menu Items */}

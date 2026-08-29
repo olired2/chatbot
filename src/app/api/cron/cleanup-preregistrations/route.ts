@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PreRegistrationModel } from '@/models/PreRegistration';
 import connectDB from '@/lib/db/mongodb';
 
+<<<<<<< HEAD
 export async function POST(req: NextRequest) {
   try {
     // Verificar token de seguridad
@@ -9,6 +10,18 @@ export async function POST(req: NextRequest) {
     const expectedToken = process.env.CRON_SECRET_TOKEN;
     
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
+=======
+export const dynamic = 'force-dynamic';
+
+export async function GET(req: NextRequest) {
+  try {
+    // Verificar token de seguridad
+    const authHeader = req.headers.get('authorization');
+    const expectedToken = process.env.CRON_SECRET_TOKEN || process.env.CRON_SECRET;
+    
+    // Solo verificar si hay un token configurado (permite probar en local)
+    if (expectedToken && (!authHeader || authHeader !== `Bearer ${expectedToken}`)) {
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
       console.log('❌ Token de autorización inválido para limpieza automática');
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
@@ -67,6 +80,7 @@ export async function POST(req: NextRequest) {
       details: error instanceof Error ? error.message : 'Error desconocido'
     }, { status: 500 });
   }
+<<<<<<< HEAD
 }
 
 // GET endpoint para consultar estadísticas sin limpiar
@@ -115,4 +129,6 @@ export async function GET(req: NextRequest) {
       error: 'Error obteniendo estadísticas'
     }, { status: 500 });
   }
+=======
+>>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 }
