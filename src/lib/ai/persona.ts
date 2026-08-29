@@ -13,6 +13,8 @@
  * a ser un tutor riguroso de la materia tal como la nombró el profesor.
  */
 
+import { findProcesosRelevantes, ProcesoQA } from './procesos-institucionales';
+
 export interface SubjectProfile {
   /** Etiqueta legible del área, se usa en el texto del prompt */
   label: string;
@@ -439,11 +441,14 @@ export function buildSystemPrompt(params: {
   description?: string;
   documentNames: string[];
   fragments: ContextFragment[];
+  /** Pregunta actual del alumno: se usa para detectar trámites institucionales preestablecidos */
+  question?: string;
 }): string {
-  const { className, description, documentNames, fragments } = params;
+  const { className, description, documentNames, fragments, question } = params;
 
   const contextText = fragments.map(f => f.content).join(' ');
   const subject = detectSubject({ className, description, contextText });
+  const procesos = question ? findProcesosRelevantes(question) : [];
 
   const identity = subject.profile && subject.confidence >= 0.5
     ? buildSpecialistIdentity(subject, className)
@@ -462,13 +467,15 @@ export function buildSystemPrompt(params: {
     ? `Material de la clase: ${documentNames.map(n => `"${n}"`).join(', ')}.`
     : 'Todavía no hay material indexado en esta clase.';
 
+  const procesosBlock = procesos.length > 0 ? buildProcesosBlock(procesos) : null;
+
   return `${identity}
 
 ═══ CONTEXTO DE LA CLASE ═══
 Clase: "${className}"${description ? `\nDescripción del profesor: ${description}` : ''}
 ${materialBlock}
 
-${
+${procesosBlock ? `${procesosBlock}\n` : ''}${
   contextBlock
     ? `═══ FRAGMENTOS RECUPERADOS DEL MATERIAL ═══
 Estos son los pasajes más relevantes para la pregunta actual. Ordenados por relevancia.
@@ -488,6 +495,7 @@ ${subject.profile ? subject.profile.habits.map(h => `• ${h}`).join('\n') : '�
 4. ALCANCE: tu dominio es ${subject.profile?.label ?? className}. Si preguntan algo de otra materia, dilo en una frase y reconduce: "eso ya sale de ${subject.profile?.label ?? className}; dentro de la clase te puedo ayudar con...". No des cátedra de temas ajenos.
 5. CONTRADICCIONES: si el material de clase dice algo distinto a lo que sabes del área, prioriza el material y señala la discrepancia con respeto.
 6. CONCISIÓN: responde exactamente lo que se te pregunta, sin rodeos ni preámbulos. Ve directo al grano y desarrolla solo lo que la pregunta pide.
+7. TRÁMITES Y NORMATIVA ESCOLAR: si aparece el bloque "PROCESOS INSTITUCIONALES" más abajo, esa pregunta SÍ es tuya aunque sea de trámites (inscripción, becas, servicio social, residencia profesional, titulación, visitas industriales) — respóndela con esa información oficial en vez de mandar al alumno a la normativa de su universidad. Solo reconduce a servicios escolares o al departamento responsable cuando NO haya bloque de procesos para esa pregunta y tampoco lo sepas con certeza.
 
 ═══ CÓMO RESPONDES ═══
 • Pregunta de definición → definición precisa en 1 párrafo + 2-3 elementos clave + un ejemplo concreto. Breve.
@@ -512,6 +520,27 @@ Cuando ayuda, te apoyas en referentes y casos del área: ${p.referents}.
 ${subject.secondary.length > 0 ? `La clase también toca ${subject.secondary.join(' y ')}; puedes cruzar esas áreas cuando la pregunta lo pida.` : ''}
 
 No anuncias tu especialidad en cada mensaje ni te presentas repetidamente: se nota en la calidad, la precisión y el vocabulario de tus respuestas.`;
+}
+
+/**
+ * Bloque de trámites institucionales preestablecidos que coinciden con la
+ * pregunta del alumno. Es contenido oficial y curado (no material subido por
+ * el profesor ni de la especialidad de la clase), así que se presenta como
+ * la fuente de mayor autoridad para estos temas y al margen del alcance de
+ * la materia.
+ */
+function buildProcesosBlock(procesos: ProcesoQA[]): string {
+  const items = procesos
+    .map(
+      p =>
+        `• Pregunta tipo: "${p.pregunta}"\n  Respuesta oficial: ${p.respuesta}\n  Departamento responsable: ${p.departamento} — tel. ${p.telefono} ext. ${p.extension} — ${p.correo}`
+    )
+    .join('\n\n');
+
+  return `═══ PROCESOS INSTITUCIONALES (fuente oficial preestablecida del TecNM Campus Colima) ═══
+La pregunta del alumno coincide con uno o más trámites ya documentados oficialmente. Respóndela con esta información aunque el trámite no sea del área de la clase — no la reinterpretes ni la completes con supuestos — y si aplica, indica el departamento y contacto responsable para gestionarlo.
+
+${items}`;
 }
 
 function buildGeneralistIdentity(className: string, subject: DetectedSubject): string {

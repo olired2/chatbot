@@ -101,6 +101,7 @@ export async function POST(
       description: classDoc.description,
       documentNames: (classDoc.documents || []).map((doc: any) => doc.name),
       fragments,
+      question,
     });
 
     const historyMessages = history.flatMap((interaction: any) => [
