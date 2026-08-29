@@ -109,7 +109,7 @@ export async function POST(
     ]);
 
     const message = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
+      model: 'openai/gpt-oss-120b',
       max_tokens: 1600,
       temperature: 0.5,
       messages: [

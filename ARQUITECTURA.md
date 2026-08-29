@@ -316,7 +316,7 @@ sequenceDiagram
 ```typescript
 // Endpoint: https://api.groq.com/openai/v1/chat/completions
 const groqConfig = {
-  model: 'llama-3.3-70b-versatile',
+  model: 'openai/gpt-oss-120b',
   temperature: 0.5,           // Balance creatividad/precisión
   max_tokens: 1600,
   stream: false               // Respuesta completa
