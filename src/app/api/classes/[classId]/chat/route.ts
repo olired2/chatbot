@@ -4,23 +4,16 @@ import { authOptions } from '@/lib/auth';
 import { ClassModel } from '@/models/Class';
 import { InteractionModel } from '@/models/Interaction';
 import connectDB from '@/lib/db/mongodb';
-<<<<<<< HEAD
-import { searchDocuments } from '@/lib/ai/supabase-embeddings';
-=======
 import { searchDocuments } from '@/lib/ai/mongodb-embeddings';
 import { buildSystemPrompt } from '@/lib/ai/persona';
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 import Groq from 'groq-sdk';
 
 // Marcar como dinámico
 export const dynamic = 'force-dynamic';
 
-<<<<<<< HEAD
-=======
 // Cuántos intercambios previos se le pasan al modelo como memoria conversacional
 const HISTORY_TURNS = 6;
 
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ classId: string }> }
@@ -63,14 +56,11 @@ export async function POST(
         respuesta: noDocsAnswer,
         fecha: new Date()
       });
-<<<<<<< HEAD
-=======
 
       // Actualizar lastActive del usuario
       await import('@/models/User').then(({ UserModel }) => 
         UserModel.findByIdAndUpdate(session.user.id, { lastActive: new Date() })
       );
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
       
       return NextResponse.json({
         answer: noDocsAnswer,
@@ -78,34 +68,6 @@ export async function POST(
       });
     }
 
-<<<<<<< HEAD
-    // Query documents using embeddings from Supabase
-    const searchResults = await searchDocuments(classId, question, 5);
-    
-    // Preparar contexto (puede estar vacío si no hay embeddings aún)
-    const context = searchResults.length > 0 
-      ? searchResults.map(r => r.content).join('\n\n')
-      : '';
-    
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-    
-    const systemPrompt = `Eres un asistente educativo especializado en la clase: ${classDoc.name}
-      
-${context ? `Tienes acceso a documentos de la clase. Usa el siguiente contexto para responder preguntas de forma clara, educativa y amigable.
-
-CONTEXTO DE DOCUMENTOS:
-${context}` : `Aún no hay documentos disponibles con embeddings indexados en esta clase. Sin embargo, puedo ayudarte con preguntas generales sobre ${classDoc.name}.`}
-
-Instrucciones:
-- Si hay documentos en el contexto y la pregunta está relacionada, usa esa información
-- Si no hay documentos o no encuentras información, explica educadamente qué no encontraste
-- Siempre sé educativo y alentador
-- Explica conceptos de forma clara y accesible`;
-
-    const message = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
-      max_tokens: 1024,
-=======
     // Recuperar los últimos intercambios para que el bot tenga memoria conversacional
     const recentInteractions = await InteractionModel.find({
       usuario_id: session.user.id,
@@ -150,16 +112,12 @@ Instrucciones:
       model: 'llama-3.3-70b-versatile',
       max_tokens: 1600,
       temperature: 0.5,
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
       messages: [
         {
           role: 'system',
           content: systemPrompt
         },
-<<<<<<< HEAD
-=======
         ...historyMessages,
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
         {
           role: 'user',
           content: question
@@ -178,14 +136,11 @@ Instrucciones:
       sources: searchResults.map(r => r.documentId) || [],
       fecha: new Date()
     });
-<<<<<<< HEAD
-=======
 
     // Actualizar lastActive del usuario
     await import('@/models/User').then(({ UserModel }) => 
       UserModel.findByIdAndUpdate(session.user.id, { lastActive: new Date() })
     );
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
     
     // Return formatted response
     return NextResponse.json({ 

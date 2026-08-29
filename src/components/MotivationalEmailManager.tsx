@@ -21,8 +21,6 @@ interface EmailStats {
   }>;
 }
 
-<<<<<<< HEAD
-=======
 interface StudentActivity {
   studentId: string;
   studentName: string;
@@ -33,15 +31,12 @@ interface StudentActivity {
   lastInteractionDate: string | null;
 }
 
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 export default function MotivationalEmailManager() {
   const { data: session } = useSession();
   const [stats, setStats] = useState<EmailStats | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-<<<<<<< HEAD
-=======
   const [studentsActivity, setStudentsActivity] = useState<StudentActivity[]>([]);
   const [isLoadingStudents, setIsLoadingStudents] = useState(false);
   const [sendingToStudent, setSendingToStudent] = useState<string | null>(null);
@@ -49,7 +44,6 @@ export default function MotivationalEmailManager() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedStudentsToEmail, setSelectedStudentsToEmail] = useState<string[]>([]);
   const [isSendingBulk, setIsSendingBulk] = useState(false);
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 
   // Cargar estadísticas
   const loadStats = async () => {
@@ -96,11 +90,6 @@ export default function MotivationalEmailManager() {
     }
   };
 
-<<<<<<< HEAD
-  useEffect(() => {
-    if (session?.user?.role === 'Maestro') {
-      loadStats();
-=======
   // Cargar actividad de los estudiantes
   const loadStudentsActivity = async () => {
     setIsLoadingStudents(true);
@@ -239,7 +228,6 @@ export default function MotivationalEmailManager() {
     if (session?.user?.role === 'Maestro') {
       loadStats();
       loadStudentsActivity();
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
     }
   }, [session]);
 
@@ -255,12 +243,6 @@ export default function MotivationalEmailManager() {
       </p>
 
       {/* Controles principales */}
-<<<<<<< HEAD
-      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <p className="text-sm text-blue-800">
-          <span className="font-semibold">⏰ Ejecución automática:</span> Diaria a las 9:00 AM
-        </p>
-=======
       <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <p className="text-sm text-blue-800">
           <span className="font-semibold">⏰ Ejecución automática:</span> Diaria a las 9:00 AM
@@ -282,7 +264,6 @@ export default function MotivationalEmailManager() {
             '🚀 Escanear y Enviar Manualmente'
           )}
         </button>
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
       </div>
 
       {/* Mensaje de resultado */}
@@ -305,9 +286,6 @@ export default function MotivationalEmailManager() {
 
           {/* Correos recientes */}
           <div>
-<<<<<<< HEAD
-            <h4 className="font-semibold mb-3 text-gray-800">📋 Correos Enviados Recientemente</h4>
-=======
             <div className="flex justify-between items-center mb-3">
               <h4 className="font-semibold text-gray-800">📋 Correos Enviados Recientemente</h4>
               {stats.recentEmails.length > 0 && (
@@ -330,40 +308,10 @@ export default function MotivationalEmailManager() {
                 </div>
               )}
             </div>
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
             <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
               {stats.recentEmails.length > 0 ? (
                 <div className="divide-y divide-gray-200">
                   {stats.recentEmails.map((email) => (
-<<<<<<< HEAD
-                    <div key={email._id} className="p-4 hover:bg-gray-50 transition">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1">
-                          <div className="font-medium text-gray-900">{email.email_enviado_a}</div>
-                          <div className="text-sm text-gray-500 mt-1">
-                            Enviado hace: {new Date(email.fecha_envio).toLocaleDateString('es-MX', { 
-                              year: 'numeric', 
-                              month: 'short', 
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </div>
-                        </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ml-2 ${
-                          email.estado === 'enviado' ? 'bg-green-100 text-green-800' :
-                          email.estado === 'fallido' ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {email.estado === 'enviado' ? '✅ Enviado' :
-                           email.estado === 'fallido' ? '❌ Fallido' :
-                           '⏳ Pendiente'}
-                        </span>
-                      </div>
-                      <div className="text-sm text-gray-600 flex gap-4">
-                        <span>📧 {email.tipo_correo === 'inactividad_15_dias' ? 'Inactividad (15 días)' : email.tipo_correo}</span>
-                        <span>⏰ {email.dias_inactividad} días sin interacción</span>
-=======
                     <div key={email._id} className="p-4 hover:bg-gray-50 transition flex items-start gap-3">
                       <div className="mt-1">
                         <input 
@@ -401,7 +349,6 @@ export default function MotivationalEmailManager() {
                           <span>📧 {email.tipo_correo === 'inactividad_15_dias' ? 'Inactividad (15 días)' : email.tipo_correo}</span>
                           <span>⏰ {email.dias_inactividad} días sin interacción</span>
                         </div>
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
                       </div>
                     </div>
                   ))}
@@ -415,8 +362,6 @@ export default function MotivationalEmailManager() {
               )}
             </div>
           </div>
-<<<<<<< HEAD
-=======
           {/* Sección de Selección Manual */}
           <div>
             <div className="flex justify-between items-center mb-3">
@@ -496,7 +441,6 @@ export default function MotivationalEmailManager() {
               )}
             </div>
           </div>
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
         </div>
       )}
     </div>

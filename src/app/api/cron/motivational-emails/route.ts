@@ -1,16 +1,6 @@
 import { NextResponse } from 'next/server';
 import { checkAndSendMotivationalEmails } from '@/lib/email/email-automation';
 
-<<<<<<< HEAD
-// Endpoint para ser llamado por servicios de cron externos (ej: Vercel Cron, GitHub Actions)
-export async function POST(req: Request) {
-  try {
-    // Verificar token de autorización para seguridad
-    const authHeader = req.headers.get('authorization');
-    const expectedToken = process.env.CRON_SECRET_TOKEN;
-
-    if (!expectedToken || authHeader !== `Bearer ${expectedToken}`) {
-=======
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
@@ -21,7 +11,6 @@ export async function GET(req: Request) {
 
     // Si hay un token esperado, verificarlo (permite testing local si no hay token configurado en dev)
     if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
@@ -60,17 +49,4 @@ export async function GET(req: Request) {
       timestamp: new Date().toISOString()
     }, { status: 500 });
   }
-<<<<<<< HEAD
-}
-
-// GET para verificar salud del endpoint
-export async function GET() {
-  return NextResponse.json({
-    status: 'ok',
-    service: 'motivational-emails-cron',
-    timestamp: new Date().toISOString(),
-    message: 'Endpoint listo para ejecutar correos motivacionales'
-  });
-=======
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 }

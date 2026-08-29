@@ -25,11 +25,7 @@ const nextConfig = {
   },
   // Suprimir advertencias de deprecación de dependencias
   experimental: {
-<<<<<<< HEAD
-    suppressHydrationWarning: true,
-=======
     serverComponentsExternalPackages: ['pdf2json'],
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
   },
 };
 

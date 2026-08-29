@@ -3,12 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { ClassModel } from '@/models/Class';
 import connectDB from '@/lib/db/mongodb';
-<<<<<<< HEAD
-import { put, del } from '@vercel/blob';
-=======
 import { deleteDocumentEmbeddings } from '@/lib/ai/mongodb-embeddings';
 import { saveDocument, deleteDocument } from '@/lib/storage/documents';
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 
 // Marcar como dinámico
 export const dynamic = 'force-dynamic';
@@ -51,24 +47,10 @@ export async function POST(
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-<<<<<<< HEAD
-    
-    // Subir a Vercel Blob Storage
-    const fileName = `${Date.now()}_${file.name}`;
-    const blobPath = `uploads/${classId}/${fileName}`;
-    
-    const blob = await put(blobPath, buffer, {
-      access: 'public',
-      contentType: 'application/pdf',
-    });
-    
-    console.log(`Archivo subido a Blob Storage: ${blob.url}`);
-=======
 
     const documentUrl = await saveDocument(classId, file.name, buffer);
 
     console.log(`Archivo subido: ${documentUrl}`);
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 
     // Actualizar documento de la clase
     const updatedClass = await ClassModel.findByIdAndUpdate(
@@ -77,11 +59,7 @@ export async function POST(
         $push: {
           documents: {
             name: file.name,
-<<<<<<< HEAD
-            path: blob.url,
-=======
             path: documentUrl,
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
             size: file.size,
             uploadedAt: new Date(),
             embeddings: false,
@@ -112,11 +90,7 @@ export async function POST(
       },
       body: JSON.stringify({
         documentId: updatedClass.documents[updatedClass.documents.length - 1]._id,
-<<<<<<< HEAD
-        documentUrl: blob.url,
-=======
         documentUrl,
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
       }),
     }).then(response => {
       if (response.ok) {
@@ -221,19 +195,6 @@ export async function DELETE(
       return NextResponse.json({ error: 'Documento no encontrado' }, { status: 404 });
     }
 
-<<<<<<< HEAD
-    // Eliminar archivo de Vercel Blob Storage si existe
-    try {
-      if (docToDelete.path) {
-        await del(docToDelete.path);
-        console.log(`✅ Archivo eliminado de Blob Storage: ${docToDelete.path}`);
-      }
-    } catch (fileError) {
-      console.error('Error eliminando archivo de Blob Storage:', fileError);
-      // Continuar aunque falle la eliminación del archivo
-    }
-
-=======
     // Eliminar archivo del almacenamiento (Blob o disco local) si existe
     try {
       if (docToDelete.path) {
@@ -253,7 +214,6 @@ export async function DELETE(
       console.error('Error eliminando embeddings de la BD:', embedError);
     }
 
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
     // Eliminar de la base de datos
     await ClassModel.findByIdAndUpdate(
       classId,

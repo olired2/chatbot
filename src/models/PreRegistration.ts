@@ -16,11 +16,7 @@ const preRegistrationSchema = new mongoose.Schema({
   },
   rol: {
     type: String,
-<<<<<<< HEAD
-    enum: ['Maestro', 'Estudiante'],
-=======
     enum: ['Maestro', 'Estudiante', 'Administrador'],
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
     required: true
   },
   institucion: {

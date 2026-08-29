@@ -85,12 +85,8 @@ export default function ReportGenerator({ classId, className }: ReportGeneratorP
     
     // Calcular interacciones por día
     const interactionsByDate = interactions.reduce((acc, interaction) => {
-<<<<<<< HEAD
-      const date = new Date(interaction.fecha).toDateString();
-=======
       const dateStr = interaction.fecha || new Date().toISOString();
       const date = new Date(dateStr).toDateString();
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
       acc[date] = (acc[date] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
@@ -137,12 +133,8 @@ export default function ReportGenerator({ classId, className }: ReportGeneratorP
       // Calcular estadísticas por día
       const interactionsByDate: Record<string, { count: number; users: Set<string> }> = {};
       interactions.forEach((interaction: InteractionData) => {
-<<<<<<< HEAD
-        const date = new Date(interaction.fecha).toISOString().split('T')[0];
-=======
         const dateStr = interaction.fecha || new Date().toISOString();
         const date = new Date(dateStr).toISOString().split('T')[0];
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
         if (!interactionsByDate[date]) {
           interactionsByDate[date] = { count: 0, users: new Set() };
         }
@@ -153,12 +145,8 @@ export default function ReportGenerator({ classId, className }: ReportGeneratorP
       // Estadísticas por mes
       const interactionsByMonth: Record<string, { count: number; users: Set<string>; days: Set<string> }> = {};
       interactions.forEach((interaction: InteractionData) => {
-<<<<<<< HEAD
-        const date = new Date(interaction.fecha);
-=======
         const dateStr = interaction.fecha || new Date().toISOString();
         const date = new Date(dateStr);
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         const dayKey = date.toISOString().split('T')[0];
         if (!interactionsByMonth[monthKey]) {
@@ -372,11 +360,7 @@ export default function ReportGenerator({ classId, className }: ReportGeneratorP
         // Obtener las últimas interacciones de usuarios con poca actividad
         const lowActivityInteractions = lowActivityUsers
           .flatMap(([_, data]) => data.interactions)
-<<<<<<< HEAD
-          .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
-=======
           .sort((a, b) => new Date(b.fecha || new Date()).getTime() - new Date(a.fecha || new Date()).getTime())
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
           .slice(0, 10);
 
         lowActivityInteractions.forEach((interaction, index) => {
@@ -387,30 +371,18 @@ export default function ReportGenerator({ classId, className }: ReportGeneratorP
 
           pdf.setFontSize(8);
           pdf.setFont('helvetica', 'bold');
-<<<<<<< HEAD
-          const fecha = new Date(interaction.fecha).toLocaleDateString('es-ES');
-=======
           const fechaStr = interaction.fecha || new Date().toISOString();
           const fecha = new Date(fechaStr).toLocaleDateString('es-ES');
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
           pdf.text(`${index + 1}. ${fecha}`, startX, yPosition);
           yPosition += 5;
 
           pdf.setFont('helvetica', 'normal');
-<<<<<<< HEAD
-          const pregunta = `P: ${interaction.pregunta}`;
-=======
           const pregunta = `P: ${interaction.pregunta || 'Sin pregunta'}`;
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
           const preguntaLines = pdf.splitTextToSize(pregunta, 170);
           pdf.text(preguntaLines, startX, yPosition);
           yPosition += preguntaLines.length * 4;
 
-<<<<<<< HEAD
-          const respuesta = `R: ${interaction.respuesta.substring(0, 150)}...`;
-=======
           const respuesta = `R: ${(interaction.respuesta || 'Sin respuesta').substring(0, 150)}...`;
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
           const respuestaLines = pdf.splitTextToSize(respuesta, 170);
           pdf.text(respuestaLines, startX, yPosition);
           yPosition += respuestaLines.length * 4 + 4;
@@ -421,17 +393,12 @@ export default function ReportGenerator({ classId, className }: ReportGeneratorP
       pdf.save(`seguimiento-uso-${className}-${new Date().toISOString().split('T')[0]}.pdf`);
       
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Error generando PDF:', error);
-      alert('Error al generar el reporte');
-=======
       console.error('Error generando PDF básico. Detalle del error:', error);
       if (error instanceof Error) {
         alert('Error al generar el reporte: ' + error.message);
       } else {
         alert('Error al generar el reporte');
       }
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
     } finally {
       setIsGenerating(false);
     }
@@ -495,13 +462,8 @@ export default function ReportGenerator({ classId, className }: ReportGeneratorP
         ['Total de Interacciones', stats.totalInteractions.toString()],
         ['Usuarios Únicos', stats.uniqueUsers.toString()],
         ['Promedio Diario', stats.averagePerDay.toString()],
-<<<<<<< HEAD
-        ['Día Más Activo', stats.mostActiveDay],
-        ['Período de Análisis', `${interactions.length > 0 ? new Date(interactions[0].fecha).toLocaleDateString() : 'N/A'} - ${new Date().toLocaleDateString()}`]
-=======
         ['Día Más Activo', stats.mostActiveDay || 'N/A'],
         ['Período de Análisis', `${interactions.length > 0 ? new Date(interactions[0].fecha || new Date()).toLocaleDateString() : 'N/A'} - ${new Date().toLocaleDateString()}`]
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
       ];
       
       pdf.setFontSize(11);
@@ -546,33 +508,21 @@ export default function ReportGenerator({ classId, className }: ReportGeneratorP
         
         pdf.setFontSize(10);
         pdf.setFont(undefined, 'bold');
-<<<<<<< HEAD
-        const fecha = new Date(interaction.fecha).toLocaleString();
-=======
         const fechaStr = interaction.fecha || new Date().toISOString();
         const fecha = new Date(fechaStr).toLocaleString();
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
         pdf.text(`${index + 1}. ${fecha}`, 20, yPosition);
         yPosition += 8;
         
         pdf.setFont(undefined, 'normal');
         
         // Pregunta
-<<<<<<< HEAD
-        const pregunta = `Pregunta: ${interaction.pregunta}`;
-=======
         const pregunta = `Pregunta: ${interaction.pregunta || 'Sin pregunta'}`;
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
         const preguntaLines = pdf.splitTextToSize(pregunta, 170);
         pdf.text(preguntaLines, 20, yPosition);
         yPosition += preguntaLines.length * 5 + 3;
         
         // Respuesta
-<<<<<<< HEAD
-        const respuesta = `Respuesta: ${interaction.respuesta}`;
-=======
         const respuesta = `Respuesta: ${interaction.respuesta || 'Sin respuesta'}`;
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
         const respuestaLines = pdf.splitTextToSize(respuesta, 170);
         pdf.text(respuestaLines, 20, yPosition);
         yPosition += respuestaLines.length * 5 + 8;
@@ -582,17 +532,12 @@ export default function ReportGenerator({ classId, className }: ReportGeneratorP
       pdf.save(`reporte-detallado-${className}-${new Date().toISOString().split('T')[0]}.pdf`);
       
     } catch (error) {
-<<<<<<< HEAD
-      console.error('Error generando PDF detallado:', error);
-      alert('Error al generar el reporte detallado');
-=======
       console.error('Error generando PDF detallado. Detalle del error:', error);
       if (error instanceof Error) {
         alert('Error al generar el reporte detallado: ' + error.message);
       } else {
         alert('Error al generar el reporte detallado');
       }
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
     } finally {
       setIsGenerating(false);
     }

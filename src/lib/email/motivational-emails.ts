@@ -46,28 +46,16 @@ const getMotivationalEmailTemplate = (studentName: string, className: string, da
             <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <h3 style="color: #1f2937; margin: 0 0 15px 0;">🚀 ¿Sabías que puedo ayudarte con?</h3>
               <ul style="color: #374151; margin: 0; padding-left: 20px;">
-<<<<<<< HEAD
-                <li>Resolver dudas sobre cultura empresarial</li>
-                <li>Explicar conceptos de emprendimiento</li>
-                <li>Crear planes de negocio paso a paso</li>
-                <li>Aplicar metodologías como SCAMPER y Design Thinking</li>
-                <li>Analizar casos de empresas exitosas</li>
-=======
                 <li>Resolver dudas específicas sobre los documentos de tu profesor</li>
                 <li>Explicar conceptos clave de forma sencilla</li>
                 <li>Hacer resúmenes de los temas más complejos</li>
                 <li>Darte ejemplos prácticos para que entiendas mejor</li>
                 <li>Ayudarte a prepararte para tus evaluaciones</li>
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
               </ul>
             </div>
             
             <p style="font-size: 16px; color: #374151; line-height: 1.6;">
-<<<<<<< HEAD
-              <strong>💡 Tip del día:</strong> Una pregunta simple como "¿Qué es la misión de una empresa?" puede abrirte todo un mundo de posibilidades empresariales.
-=======
               <strong>💡 Tip del día:</strong> ¡No tengas miedo de hacer preguntas! Mientras más me preguntes, más personalizada será tu experiencia de aprendizaje.
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
             </p>
             
             <div style="text-align: center; margin: 30px 0;">
@@ -108,45 +96,25 @@ const getMotivationalEmailTemplate = (studentName: string, className: string, da
             </p>
             
             <div style="background: #ecfdf5; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
-<<<<<<< HEAD
-              <h3 style="color: #065f46; margin: 0 0 15px 0;">💼 Tendencias Empresariales Actuales</h3>
-              <p style="color: #047857; margin: 0; font-size: 14px;">
-                ¿Sabías que las empresas más exitosas de 2024 implementan metodologías ágiles y pensamiento de diseño? 
-                ¡Pregúntame sobre casos específicos!
-=======
               <h3 style="color: #065f46; margin: 0 0 15px 0;">📚 Domina el material de la clase</h3>
               <p style="color: #047857; margin: 0; font-size: 14px;">
                 He analizado a fondo los documentos que el profesor ha subido para ti. Si hay algún tema que no te quedó claro en clase, ¡pregúntame! Estoy configurado para responderte basándome exactamente en tu plan de estudios.
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
               </p>
             </div>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 25px 0;">
               <div style="background: #eff6ff; padding: 15px; border-radius: 8px; text-align: center;">
                 <div style="font-size: 24px; margin-bottom: 5px;">🎯</div>
-<<<<<<< HEAD
-                <div style="font-size: 14px; color: #1e40af; font-weight: bold;">Objetivos SMART</div>
-              </div>
-              <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; text-align: center;">
-                <div style="font-size: 24px; margin-bottom: 5px;">💡</div>
-                <div style="font-size: 14px; color: #1e40af; font-weight: bold;">Innovación</div>
-=======
                 <div style="font-size: 14px; color: #1e40af; font-weight: bold;">Enfoque</div>
               </div>
               <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; text-align: center;">
                 <div style="font-size: 24px; margin-bottom: 5px;">💡</div>
                 <div style="font-size: 14px; color: #1e40af; font-weight: bold;">Conocimiento</div>
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
               </div>
             </div>
             
             <p style="font-size: 16px; color: #374151; line-height: 1.6;">
-<<<<<<< HEAD
-              <strong>🔥 Pregunta del día:</strong> "¿Cómo puede una startup competir contra grandes empresas?" 
-              ¡La respuesta te sorprenderá!
-=======
               <strong>🔥 Pregunta del día:</strong> Entra al chat y dime: "Resume los puntos más importantes del último tema". ¡Te sorprenderá lo rápido que podemos avanzar juntos!
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
             </p>
             
             <div style="text-align: center; margin: 30px 0;">

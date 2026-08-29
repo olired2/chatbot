@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server';
-<<<<<<< HEAD
-import { searchDocuments } from '@/lib/ai/supabase-embeddings';
-=======
 import { searchDocuments } from '@/lib/ai/mongodb-embeddings';
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 
 export const dynamic = 'force-dynamic';
 

@@ -1,67 +1,17 @@
 # Configuración de Variables de Entorno para Vercel
 
-<<<<<<< HEAD
-Para desplegar este proyecto en Vercel, necesitas configurar las siguientes variables de entorno en tu dashboard de Vercel:
-=======
 Para desplegar este proyecto en Vercel, necesitas configurar las siguientes variables de entorno en tu panel de control de Vercel. Ver `.env.example` para la referencia completa.
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 
 ## Variables Requeridas:
 
 ### Base de Datos
-<<<<<<< HEAD
-- `MONGODB_URI`: Tu string de conexión de MongoDB Atlas
-=======
 - `MONGODB_URI`: Tu cadena de conexión de MongoDB Atlas
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 - `MONGO_DBNAME`: Nombre de tu base de datos
 
 ### Autenticación
 - `NEXTAUTH_URL`: URL de producción (ej: https://tu-app.vercel.app)
 - `NEXTAUTH_SECRET`: Token secreto para NextAuth (genera uno nuevo para producción)
 
-<<<<<<< HEAD
-### APIs Externas
-- `GOOGLE_API_KEY`: API Key de Google
-- `GROQ_API_KEY`: API Key de Groq AI (para chat)
-- `JINA_API_KEY`: API Key de Jina AI (para embeddings - gratuita)
-
-### Supabase (Vector Search)
-- `SUPABASE_URL`: URL de tu proyecto Supabase
-- `SUPABASE_SERVICE_ROLE_KEY`: Service Role Key de Supabase (para almacenar embeddings)
-
-### Configuración de Email
-- `EMAIL_FROM`: Email desde el cual enviar correos
-- `EMAIL_HOST`: Servidor SMTP (ej: smtp.gmail.com)
-- `EMAIL_PORT`: Puerto SMTP (ej: 587)
-- `EMAIL_USER`: Usuario del email
-- `EMAIL_PASS`: Contraseña de aplicación del email
-
-### SMTP para Verificación
-- `SMTP_HOST`: Servidor SMTP
-- `SMTP_PORT`: Puerto SMTP
-- `SMTP_USER`: Usuario SMTP
-- `SMTP_PASS`: Contraseña SMTP
-
-### Seguridad
-- `CRON_SECRET_TOKEN`: Token secreto para cron jobs
-
-### Desarrollo
-- `NEXT_PRIVATE_DISABLE_TURBO`: Configurar como `1` si es necesario
-
-## Cómo configurar en Vercel:
-
-1. Ve a tu proyecto en Vercel Dashboard
-2. Navega a Settings → Environment Variables
-3. Añade cada variable con su valor correspondiente
-4. Selecciona los entornos donde aplicar (Production, Preview, Development)
-
-## Notas de Seguridad:
-- NUNCA subas el archivo `.env.local` al repositorio
-- Genera nuevos secretos para producción
-- Usa contraseñas de aplicación para Gmail
-- Mantén las API keys seguras
-=======
 ### APIs de IA
 - `GROQ_API_KEY`: Clave de API de Groq (motor de las respuestas del chat)
 - `GOOGLE_API_KEY`: Clave de API de Google (embeddings con Gemini para el RAG)
@@ -101,4 +51,3 @@ Para desplegar este proyecto en Vercel, necesitas configurar las siguientes vari
 - Genera nuevos secretos (`NEXTAUTH_SECRET`, `CRON_SECRET_TOKEN`) para producción, distintos de los de desarrollo
 - Usa contraseñas de aplicación para Gmail, no la contraseña de la cuenta
 - Si alguna clave o credencial llegó a commitearse por error, rótala de inmediato y purga el historial de git — cambiar el archivo no es suficiente una vez que el repositorio es público
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8

@@ -45,15 +45,10 @@ interface StudentWithProgress {
   nombre: string;
   email: string;
   lastInteraction: Date | null;
-<<<<<<< HEAD
-  totalInteractions: number;
-  needsMotivation: boolean;
-=======
   lastActive: Date | null;
   totalInteractions: number;
   needsMotivation: boolean;
   isOnline: boolean;
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
 }
 
 export default async function ClassDetailPage({
@@ -117,8 +112,6 @@ export default async function ClassDetailPage({
         clase_id: classId
       });
 
-<<<<<<< HEAD
-=======
       const userDoc = await import('@/models/User').then(({ UserModel }) => 
         UserModel.findById(student._id).select('lastActive').lean()
       );
@@ -127,23 +120,16 @@ export default async function ClassDetailPage({
       // Consideramos "Online" si tuvo actividad en los últimos 5 minutos
       const isOnline = lastActive ? (new Date().getTime() - new Date(lastActive).getTime()) < 5 * 60 * 1000 : false;
 
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
       return {
         _id: String(student._id),
         nombre: student.nombre || '',
         email: student.email || '',
         lastInteraction: lastInteraction?.fecha || null,
-<<<<<<< HEAD
-        totalInteractions,
-        needsMotivation: !lastInteraction || 
-          (new Date().getTime() - new Date(lastInteraction.fecha).getTime()) > 15 * 24 * 60 * 60 * 1000
-=======
         lastActive,
         totalInteractions,
         needsMotivation: !lastInteraction || 
           (new Date().getTime() - new Date(lastInteraction.fecha).getTime()) > 15 * 24 * 60 * 60 * 1000,
         isOnline
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
       };
     })
   );
@@ -206,27 +192,6 @@ export default async function ClassDetailPage({
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-<<<<<<< HEAD
-                    <p className="font-medium text-gray-900">{student.nombre}</p>
-                    <p className="text-sm text-gray-500">{student.email}</p>
-                    <div className="mt-2 space-y-1">
-                      <p className="text-xs text-gray-600">
-                        💬 {student.totalInteractions} interacción(es) total
-                      </p>
-                      {student.lastInteraction ? (
-                        <p className="text-xs text-gray-600">
-                          🕒 Última actividad: {new Date(student.lastInteraction).toLocaleDateString('es-MX', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </p>
-                      ) : (
-                        <p className="text-xs text-orange-600 font-medium">
-                          ⚠️ Sin interacciones aún
-=======
                     <div className="flex items-center gap-2">
                       <p className="font-medium text-gray-900">{student.nombre}</p>
                       {student.isOnline && (
@@ -260,30 +225,16 @@ export default async function ClassDetailPage({
                           🕒 Última pregunta: {new Date(student.lastInteraction).toLocaleDateString('es-MX', {
                             day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
                           })}
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
                         </p>
                       )}
                     </div>
                   </div>
-<<<<<<< HEAD
-                  <div className="ml-4">
-                    {student.needsMotivation ? (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-200 text-yellow-800">
-                        ⚠️ Necesita motivación
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        ✓ Activo
-                      </span>
-                    )}
-=======
                   <div className="ml-4 flex flex-col gap-2 items-end">
                     {student.needsMotivation && student.totalInteractions > 0 ? (
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-200 text-yellow-800">
                         ⚠️ Necesita motivación (Inactivo &gt; 15 días)
                       </span>
                     ) : null}
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
                   </div>
                 </div>
               </div>

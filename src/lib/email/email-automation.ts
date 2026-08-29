@@ -193,9 +193,6 @@ export async function getMotivationalEmailStats(classId?: string) {
 export async function runMotivationalEmailsManually() {
   console.log('🚀 Ejecutando proceso manual de correos motivacionales...');
   return await checkAndSendMotivationalEmails();
-<<<<<<< HEAD
-}
-=======
 }
 export async function getStudentsWithActivityForTeacher(teacherId: string) {
   try {
@@ -293,4 +290,3 @@ export async function sendManualEmailToStudent(studentId: string, classId: strin
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8

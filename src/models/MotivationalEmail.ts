@@ -3,11 +3,7 @@ import { Schema, model, models, Document, Types } from 'mongoose';
 export interface IMotivationalEmail extends Document {
   usuario_id: string;
   clase_id: string;
-<<<<<<< HEAD
-  tipo_correo: 'inactividad_15_dias' | 'recordatorio_semanal' | 'bienvenida';
-=======
   tipo_correo: 'inactividad_15_dias' | 'recordatorio_semanal' | 'bienvenida' | 'manual_profesor';
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
   fecha_envio: Date;
   email_enviado_a: string;
   dias_inactividad: number;
@@ -29,11 +25,7 @@ const MotivationalEmailSchema = new Schema<IMotivationalEmail>({
   },
   tipo_correo: {
     type: String,
-<<<<<<< HEAD
-    enum: ['inactividad_15_dias', 'recordatorio_semanal', 'bienvenida'],
-=======
     enum: ['inactividad_15_dias', 'recordatorio_semanal', 'bienvenida', 'manual_profesor'],
->>>>>>> 0216685e1e2dc6239d51091a40ee4c0806e78df8
     required: true
   },
   fecha_envio: {
