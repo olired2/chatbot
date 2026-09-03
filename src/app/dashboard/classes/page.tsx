@@ -26,6 +26,7 @@ export default async function ClassesPage() {
     name: cls.name,
     description: cls.description,
     code: cls.code,
+    expiresAt: cls.expiresAt ? new Date(cls.expiresAt).toISOString() : null,
     students: (cls.students || []).map((s: any) => (typeof s === 'string' ? s : s.toString())),
     documents: (cls.documents || []).map((doc: any) => ({
       filename: doc.filename,

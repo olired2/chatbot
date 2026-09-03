@@ -22,7 +22,19 @@ export async function POST(req: Request) {
     }
 
     await connectDB();
-    
+
+    const activeClassCount = await ClassModel.countDocuments({
+      teacher: session.user.id,
+      $or: [{ expiresAt: { $exists: false } }, { expiresAt: { $gt: new Date() } }]
+    });
+
+    if (activeClassCount >= 5) {
+      return NextResponse.json(
+        { error: 'Has alcanzado el límite de 5 clases activas. Elimina o espera a que expire una clase existente para crear una nueva.' },
+        { status: 403 }
+      );
+    }
+
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
     
     // Calcular fecha de expiración

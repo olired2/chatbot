@@ -11,11 +11,14 @@ interface ClassItemProps {
   description: string;
   code: string;
   students: string[];
+  expiresAt?: string | null;
   documents: {
     filename: string;
     uploadedAt: string | null;
   }[];
 }
+
+const MAX_ACTIVE_CLASSES = 5;
 
 interface ClassesClientProps {
   initialClasses: ClassItemProps[];
@@ -26,6 +29,11 @@ export default function ClassesClient({ initialClasses }: ClassesClientProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [classToDelete, setClassToDelete] = useState<any>(null);
+
+  const activeClassCount = classes.filter(
+    (c) => !c.expiresAt || new Date(c.expiresAt) > new Date()
+  ).length;
+  const limitReached = activeClassCount >= MAX_ACTIVE_CLASSES;
 
   const handleClassCreated = async () => {
     // Recargar las clases
@@ -92,12 +100,21 @@ export default function ClassesClient({ initialClasses }: ClassesClientProps) {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900 text-visible">📚 Mis Clases</h1>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-indigo-600 text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors shadow-md flex items-center gap-2"
-          >
-            ➕ Nueva Clase
-          </button>
+          <div className="flex flex-col items-end gap-1">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              disabled={limitReached}
+              title={limitReached ? 'Has alcanzado el límite de 5 clases activas' : undefined}
+              className="bg-indigo-600 text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors shadow-md flex items-center gap-2 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:hover:bg-gray-300"
+            >
+              ➕ Nueva Clase
+            </button>
+            {limitReached && (
+              <p className="text-xs text-red-600">
+                Límite de {MAX_ACTIVE_CLASSES} clases activas alcanzado
+              </p>
+            )}
+          </div>
         </div>
 
         {classes.length === 0 ? (
