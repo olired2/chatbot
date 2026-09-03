@@ -4,6 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 const USE_BLOB_STORAGE = process.env.NEXT_PUBLIC_STORAGE_MODE === 'blob';
+const UPLOAD_FETCH_TIMEOUT_MS = 65000;
+
+function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}, timeoutMs = UPLOAD_FETCH_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(input, { ...init, signal: controller.signal }).finally(() => clearTimeout(timeoutId));
+}
 
 interface UploadDocumentProps {
   classId: string;
@@ -81,7 +88,7 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
         const formData = new FormData();
         formData.append('file', file);
 
-        const uploadResponse = await fetch(`/api/classes/${classId}/documents/local-upload`, {
+        const uploadResponse = await fetchWithTimeout(`/api/classes/${classId}/documents/local-upload`, {
           method: 'POST',
           body: formData,
         });
@@ -98,10 +105,10 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
       }
 
       setProgress(90);
-      setMessage('📝 Registrando documento...');
+      setMessage('📝 Registrando y procesando documento... (puede tardar hasta un minuto)');
 
-      // Registrar el documento en MongoDB
-      const registerResponse = await fetch(`/api/classes/${classId}/documents/register`, {
+      // Registrar el documento y esperar a que termine de procesarse
+      const registerResponse = await fetchWithTimeout(`/api/classes/${classId}/documents/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -121,7 +128,14 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
 
       console.log('Documento registrado:', registerData);
       setProgress(100);
-      setMessage('✅ Documento subido y registrado exitosamente!');
+
+      if (registerData.document?.processed && registerData.document?.embeddings) {
+        setMessage('✅ Documento subido y procesado exitosamente!');
+      } else {
+        setMessage(
+          `⚠️ Documento subido, pero el procesamiento falló${registerData.processingError ? `: ${registerData.processingError}` : ''}. Podés reintentarlo desde la lista de documentos.`
+        );
+      }
       setFile(null);
       
       // Reset file input
@@ -148,7 +162,9 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
       }
       
       // Mensajes más específicos
-      if (errorMessage.includes('JSON')) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        errorMessage = '❌ El servidor tardó demasiado en responder. Verificá el estado del documento en la lista o intentá de nuevo.';
+      } else if (errorMessage.includes('JSON')) {
         errorMessage = '❌ Error de comunicación con el servidor. Por favor intenta de nuevo.';
       } else if (errorMessage.includes('size') || errorMessage.includes('large')) {
         errorMessage = '❌ El archivo es demasiado grande. Máximo 100MB permitidos.';
@@ -213,7 +229,13 @@ export default function UploadDocument({ classId, onUploadSuccess }: UploadDocum
         )}
 
         {message && (
-          <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded">
+          <div
+            className={
+              message.startsWith('⚠️')
+                ? 'bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded'
+                : 'bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded'
+            }
+          >
             {message}
           </div>
         )}

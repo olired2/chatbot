@@ -11,6 +11,8 @@ interface Document {
   processed?: boolean;
   path: string;
   _id?: string;
+  lastError?: string | null;
+  errorCount?: number;
 }
 
 interface DocumentListProps {
@@ -18,26 +20,38 @@ interface DocumentListProps {
   documents: Document[];
 }
 
+const MAX_AUTO_REFRESH_ATTEMPTS = 6; // 6 x 10s = 1 minuto
+
 export default function DocumentList({ classId, documents: initialDocuments }: DocumentListProps) {
   const [documents, setDocuments] = useState<Document[]>(initialDocuments);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
+  const [refreshAttempts, setRefreshAttempts] = useState(0);
   const router = useRouter();
 
-  // Auto-refresh cada 10 segundos si hay documentos pendientes (sin procesar)
+  // Auto-refresh cada 10 segundos si hay documentos pendientes (sin procesar),
+  // hasta un máximo de intentos para no reintentar para siempre en silencio.
   useEffect(() => {
-    // Solo refrescar si hay documentos que aún no están marcados como procesados
     const hasPendingDocs = documents.some(doc => !doc.processed && !doc.embeddings);
-    
-    if (hasPendingDocs) {
+
+    if (hasPendingDocs && refreshAttempts < MAX_AUTO_REFRESH_ATTEMPTS) {
       const interval = setInterval(() => {
         console.log('🔄 Refrescando estado de documentos pendientes...');
+        setRefreshAttempts(prev => prev + 1);
         router.refresh();
-      }, 10000); // Cada 10 segundos (aumentado porque embeddings se procesan lentamente)
+      }, 10000);
 
       return () => clearInterval(interval);
     }
-  }, [documents, router]);
+  }, [documents, router, refreshAttempts]);
+
+  // Sincronizar el estado local cuando router.refresh() trae documentos
+  // actualizados desde el servidor (sin esto, el polling nunca se reflejaba
+  // en pantalla y el badge "Procesando..." parecía colgado para siempre).
+  useEffect(() => {
+    setDocuments(initialDocuments);
+    setRefreshAttempts(0);
+  }, [initialDocuments]);
 
   const handleDelete = async (docName: string) => {
     if (!confirm(`¿Estás seguro de que deseas eliminar "${docName}"?`)) {
@@ -142,8 +156,16 @@ export default function DocumentList({ classId, documents: initialDocuments }: D
     );
   }
 
+  const hasPendingDocs = documents.some(doc => !doc.processed && !doc.embeddings);
+  const autoRefreshExhausted = hasPendingDocs && refreshAttempts >= MAX_AUTO_REFRESH_ATTEMPTS;
+
   return (
     <div className="space-y-3">
+      {autoRefreshExhausted && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-2 rounded text-xs">
+          No se pudo confirmar el estado de algunos documentos. Usá el botón "Procesar" o recargá la página.
+        </div>
+      )}
       {documents.map((doc, index) => (
         <div
           key={index}
@@ -167,7 +189,8 @@ export default function DocumentList({ classId, documents: initialDocuments }: D
                 </p>
               )}
             </div>
-            <div className="ml-4 flex items-center gap-2">
+            <div className="ml-4 flex flex-col items-end gap-1">
+            <div className="flex items-center gap-2">
               {doc.embeddings ? (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                   ✓ Procesado
@@ -221,6 +244,12 @@ export default function DocumentList({ classId, documents: initialDocuments }: D
                   </svg>
                 )}
               </button>
+            </div>
+            {!doc.processed && !doc.embeddings && doc.lastError && (
+              <p className="text-xs text-red-600 max-w-xs text-right">
+                ⚠️ {doc.lastError}
+              </p>
+            )}
             </div>
           </div>
         </div>

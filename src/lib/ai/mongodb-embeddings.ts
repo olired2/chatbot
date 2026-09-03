@@ -18,17 +18,24 @@ function cosineSimilarity(a: number[], b: number[]): number {
   return dotProduct / (magnitudeA * magnitudeB);
 }
 
+const EMBEDDING_TIMEOUT_MS = 15000;
+
 export async function generateEmbedding(text: string): Promise<number[]> {
   // PRO: Uso de Redes Neuronales (Google Gemini) si está configurado
   if (process.env.GOOGLE_API_KEY) {
     try {
       const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
       const model = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
-      const result = await model.embedContent(text);
+      const result = await Promise.race([
+        model.embedContent(text),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout generando embedding con Gemini')), EMBEDDING_TIMEOUT_MS)
+        )
+      ]);
       return result.embedding.values;
     } catch (error) {
       console.warn("⚠️ Error con Google Gemini, usando modelo básico de respaldo:", error);
-      // Fallback al modelo heurístico si falla la API
+      // Fallback al modelo heurístico si falla la API o se cuelga
     }
   }
 

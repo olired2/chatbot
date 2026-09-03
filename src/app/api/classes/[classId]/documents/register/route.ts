@@ -5,6 +5,9 @@ import { ClassModel } from '@/models/Class';
 import connectDB from '@/lib/db/mongodb';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
+
+const PROCESS_TIMEOUT_MS = 55000;
 
 /**
  * API para registrar un documento después de subirlo a Vercel Blob
@@ -84,39 +87,64 @@ export async function POST(
     const newDocument = updatedClass.documents[updatedClass.documents.length - 1];
     console.log(`✅ Documento registrado: ${newDocument._id}`);
 
-    // Iniciar procesamiento en background
+    // Iniciar procesamiento y esperar el resultado real, para no reportar
+    // éxito cuando el procesamiento nunca llegó a correr o falló en silencio.
     const internalToken = process.env.CRON_SECRET_TOKEN || 'default-secret';
-    // Usar URL de producción fija para evitar problemas con localhost
-    // Usar URL de producción de la env o fallback a Vercel
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.BASE_URL || 'https://chatbot-plum-eta-53.vercel.app';
+    const requestUrl = new URL(req.url);
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.BASE_URL || `${requestUrl.protocol}//${requestUrl.host}`;
     const processUrl = `${baseUrl}/api/classes/${classId}/documents/process`;
 
-    console.log(`🔄 Iniciando procesamiento automático: ${processUrl}`);
+    console.log(`🔄 Iniciando procesamiento: ${processUrl}`);
 
-    // Fire and forget - no esperamos la respuesta
-    fetch(processUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${internalToken}`,
-      },
-      body: JSON.stringify({
-        documentId: newDocument._id.toString(),
-        documentUrl: blobUrl,
-      }),
-    }).catch(error => {
-      console.error('⚠️ Error iniciando procesamiento:', error);
-    });
+    let processed = false;
+    let embeddingsGenerated = false;
+    let processingError: string | undefined;
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), PROCESS_TIMEOUT_MS);
+
+      const processResponse = await fetch(processUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${internalToken}`,
+        },
+        body: JSON.stringify({
+          documentId: newDocument._id.toString(),
+          documentUrl: blobUrl,
+        }),
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeoutId));
+
+      const processData = await processResponse.json().catch(() => null);
+
+      if (processResponse.ok) {
+        processed = true;
+        embeddingsGenerated = true;
+      } else {
+        processingError = processData?.details || processData?.error || `El procesamiento respondió con estado ${processResponse.status}`;
+        console.error('⚠️ El procesamiento del documento falló:', processingError);
+      }
+    } catch (error) {
+      processingError = error instanceof Error ? error.message : 'Error iniciando procesamiento';
+      console.error('⚠️ Error iniciando procesamiento:', processingError);
+    }
 
     return NextResponse.json({
       success: true,
-      message: 'Documento registrado exitosamente',
+      message: processed
+        ? 'Documento registrado y procesado exitosamente'
+        : 'Documento registrado, pero el procesamiento falló. Puedes reintentarlo desde la lista de documentos.',
       document: {
         _id: newDocument._id,
         name: newDocument.name,
         path: newDocument.path,
-        uploadedAt: newDocument.uploadedAt
-      }
+        uploadedAt: newDocument.uploadedAt,
+        processed,
+        embeddings: embeddingsGenerated
+      },
+      processingError
     });
   } catch (error) {
     console.error('❌ Error registrando documento:', error);

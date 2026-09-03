@@ -17,6 +17,8 @@ interface DocumentData {
   processed?: boolean;
   path?: string;
   _id?: unknown;
+  lastError?: string | null;
+  errorCount?: number;
 }
 
 interface StudentData {
@@ -96,7 +98,9 @@ export default async function ClassDetailPage({
     embeddings: doc.embeddings || false,
     processed: doc.processed || false,
     path: doc.path || '',
-    _id: doc._id ? String(doc._id) : undefined
+    _id: doc._id ? String(doc._id) : undefined,
+    lastError: doc.lastError || null,
+    errorCount: doc.errorCount || 0
   }));
 
   // Obtener última interacción de cada estudiante

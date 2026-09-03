@@ -9,6 +9,27 @@ import { readDocument } from '@/lib/storage/documents';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60; // Permitir hasta 60 segundos para procesar PDFs en Vercel
 
+const PDF_PARSE_TIMEOUT_MS = 45000;
+
+/**
+ * Marca un documento con un error de procesamiento, dejando processed en false
+ * para que la UI vuelva a ofrecer el botón de reintento.
+ */
+async function markDocumentError(classId: string, documentUrl: string, message: string) {
+  try {
+    await ClassModel.findByIdAndUpdate(
+      classId,
+      {
+        $set: { 'documents.$[doc].lastError': message },
+        $inc: { 'documents.$[doc].errorCount': 1 },
+      },
+      { arrayFilters: [{ 'doc.path': documentUrl }] }
+    );
+  } catch (updateError) {
+    console.error('❌ No se pudo registrar el error del documento:', updateError);
+  }
+}
+
 /**
  * Divide texto en chunks
  */
@@ -35,9 +56,12 @@ export async function POST(
 ) {
   let originalLog = console.log;
   let originalWarn = console.warn;
-  
+  let classIdForError: string | undefined;
+  let documentUrlForError: string | undefined;
+
   try {
     const { classId } = await params;
+    classIdForError = classId;
     
     // Verificar que es una llamada interna (con token secreto)
     const authHeader = req.headers.get('authorization');
@@ -72,6 +96,7 @@ export async function POST(
     }
 
     const { documentId, documentUrl } = await req.json();
+    documentUrlForError = documentUrl;
 
     if (!documentId || !documentUrl) {
       return NextResponse.json(
@@ -121,53 +146,57 @@ export async function POST(
     };
     
     try {
-      const fullText = await new Promise<string>((resolve, reject) => {
-        const pdfParser = new PDFParser(null, true);
-        
-        pdfParser.on('pdfParser_dataError', (errData: any) => {
-          reject(new Error(`PDF parsing error: ${errData.parserError}`));
-        });
-        
-        pdfParser.on('pdfParser_dataReady', () => {
-          try {
-            let text = '';
-            
-            const data = pdfParser.data as any;
-            if (data && data.Pages) {
-              for (const page of data.Pages) {
-                if (page.Texts) {
-                  for (const textObj of page.Texts) {
-                    if (textObj.R && textObj.R[0] && textObj.R[0].T) {
-                      try {
-                        // Intentar decodificar, si falla usar el texto tal cual
-                        text += decodeURIComponent(textObj.R[0].T) + ' ';
-                      } catch (decodeError) {
-                        // Si falla el decode, usar el texto sin decodificar
-                        text += textObj.R[0].T.replace(/%20/g, ' ').replace(/%[0-9A-Fa-f]{2}/g, '') + ' ';
+      const fullText = await Promise.race([
+        new Promise<string>((resolve, reject) => {
+          const pdfParser = new PDFParser(null, true);
+
+          pdfParser.on('pdfParser_dataError', (errData: any) => {
+            reject(new Error(`PDF parsing error: ${errData.parserError}`));
+          });
+
+          pdfParser.on('pdfParser_dataReady', () => {
+            try {
+              let text = '';
+
+              const data = pdfParser.data as any;
+              if (data && data.Pages) {
+                for (const page of data.Pages) {
+                  if (page.Texts) {
+                    for (const textObj of page.Texts) {
+                      if (textObj.R && textObj.R[0] && textObj.R[0].T) {
+                        try {
+                          // Intentar decodificar, si falla usar el texto tal cual
+                          text += decodeURIComponent(textObj.R[0].T) + ' ';
+                        } catch (decodeError) {
+                          // Si falla el decode, usar el texto sin decodificar
+                          text += textObj.R[0].T.replace(/%20/g, ' ').replace(/%[0-9A-Fa-f]{2}/g, '') + ' ';
+                        }
                       }
                     }
                   }
                 }
               }
-            }
 
-            resolve(text);
-          } catch (error) {
-            reject(error);
-          }
-        });
-        
-        pdfParser.parseBuffer(pdfBuffer);
-      });
+              resolve(text);
+            } catch (error) {
+              reject(error);
+            }
+          });
+
+          pdfParser.parseBuffer(pdfBuffer);
+        }),
+        new Promise<string>((_, reject) =>
+          setTimeout(() => reject(new Error('Tiempo de espera agotado al parsear el PDF')), PDF_PARSE_TIMEOUT_MS)
+        )
+      ]);
 
       // Restaurar console.warn después del Promise
       console.warn = originalLog;
 
       if (fullText.trim().length === 0) {
-        return NextResponse.json(
-          { error: 'No se pudo extraer texto del PDF' },
-          { status: 400 }
-        );
+        const message = 'No se pudo extraer texto del PDF';
+        await markDocumentError(classId, documentUrl, message);
+        return NextResponse.json({ error: message }, { status: 400 });
       }
 
       console.log(`📝 Texto extraído: ${fullText.length} caracteres`);
@@ -176,83 +205,64 @@ export async function POST(
       const chunks = splitTextIntoChunks(fullText, 500, 100);
       console.log(`✂️ Documento dividido en ${chunks.length} fragmentos`);
 
-      // Marcar como procesado en MongoDB (antes de esperar embeddings)
-      console.log(`📝 Marcando documento como procesado en MongoDB...`);
-      console.log(`🔍 Buscando documento con path: ${documentUrl}`);
-      
-      const updateResult = await ClassModel.findByIdAndUpdate(
+      // Generar embeddings ANTES de marcar el documento como procesado, para
+      // no dejarlo nunca en un estado intermedio (processed sin embeddings)
+      // del que la UI no puede recuperarse.
+      console.log(`⏳ Procesando embeddings para ${chunks.length} chunks...`);
+
+      const embeddingPromises = chunks.map((chunk, index) =>
+        generateEmbedding(chunk)
+          .then(embedding => ({
+            classId,
+            documentId: documentId || documentUrl,
+            chunkIndex: index,
+            content: chunk,
+            embedding
+          }))
+          .catch(err => {
+            console.error(`❌ Error generando embedding para chunk ${index}:`, err);
+            return null;
+          })
+      );
+
+      const results = await Promise.all(embeddingPromises);
+      const successfulEmbeddings = results.filter((r): r is DocumentChunk => r !== null);
+
+      if (successfulEmbeddings.length === 0) {
+        const message = 'No se pudieron generar embeddings para el documento';
+        console.warn(`⚠️ ${message}: ${documentUrl}`);
+        await markDocumentError(classId, documentUrl, message);
+        return NextResponse.json({ error: message }, { status: 500 });
+      }
+
+      console.log(`✅ Generados ${successfulEmbeddings.length}/${chunks.length} embeddings`);
+
+      // Guardar embeddings en la base de datos
+      await storeEmbeddings(successfulEmbeddings);
+
+      // Marcar el documento como completamente procesado (texto + embeddings juntos)
+      await ClassModel.findByIdAndUpdate(
         classId,
         {
           $set: {
             'documents.$[doc].processed': true,
             'documents.$[doc].processedAt': new Date(),
+            'documents.$[doc].embeddings': true,
+            'documents.$[doc].lastError': null,
           },
         },
         {
           arrayFilters: [{ 'doc.path': documentUrl }],
-          new: true // Retornar el documento actualizado
         }
       );
-      
-      console.log(`✅ Documento marcado como procesado`);
-      console.log(`📊 Resultado de actualización:`, updateResult?.documents?.filter((d: any) => d.path === documentUrl));
 
-      // Procesar embeddings directamente (await obligatorio en Vercel Serverless)
-      console.log(`⏳ Iniciando procesamiento de embeddings...`);
-      
-      try {
-        console.log(`🔄 Procesando embeddings para ${chunks.length} chunks...`);
-        
-        // Generar embeddings para cada chunk
-        const embeddingPromises = chunks.map((chunk, index) => 
-          generateEmbedding(chunk)
-            .then(embedding => ({
-              classId,
-              documentId: documentId || documentUrl,
-              chunkIndex: index,
-              content: chunk,
-              embedding
-            }))
-            .catch(err => {
-              console.error(`❌ Error generando embedding para chunk ${index}:`, err);
-              return null;
-            })
-        );
-        
-        const results = await Promise.all(embeddingPromises);
-        const successfulEmbeddings = results.filter((r): r is DocumentChunk => r !== null);
-        
-        if (successfulEmbeddings.length > 0) {
-          console.log(`✅ Generados ${successfulEmbeddings.length}/${chunks.length} embeddings`);
-          
-          // Guardar embeddings en la base de datos
-          await storeEmbeddings(successfulEmbeddings);
-          
-          // Marcar documento como completamente procesado
-          await ClassModel.findByIdAndUpdate(
-            classId,
-            {
-              $set: {
-                'documents.$[doc].embeddings': true,
-              },
-            },
-            {
-              arrayFilters: [{ 'doc.path': documentUrl }],
-            }
-          );
-          
-          console.log(`🎉 Documento completamente procesado: ${documentUrl}`);
-        } else {
-          console.warn(`⚠️ No se pudieron generar embeddings para ${documentUrl}`);
-        }
-      } catch (error) {
-        console.error(`❌ Error en procesamiento de embeddings:`, error);
-      }
-      
+      console.log(`🎉 Documento completamente procesado: ${documentUrl}`);
+
       return NextResponse.json({
         success: true,
-        message: 'Documento recibido y embeddings procesados exitosamente.',
+        message: 'Documento procesado y embeddings generados exitosamente.',
         chunks: chunks.length,
+        embeddings: successfulEmbeddings.length,
       });
     } finally {
       // Restaurar console en caso de error
@@ -262,6 +272,9 @@ export async function POST(
   } catch (error) {
     console.error('❌ Error procesando documento:', error);
     const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+    if (classIdForError && documentUrlForError) {
+      await markDocumentError(classIdForError, documentUrlForError, errorMessage);
+    }
     return NextResponse.json(
       {
         error: 'Error al procesar documento',
